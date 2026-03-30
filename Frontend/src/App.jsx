@@ -1,6 +1,8 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Login from "./pages/Login";
+import './App.css';
+
+import Login from "./Pages/login";
 //import Signup from "./Pages/signup"
 
 const App = () => {
@@ -9,7 +11,7 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
-        
+         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
   );
