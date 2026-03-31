@@ -8,10 +8,10 @@ const foodSchema = new Schema({
     type: String,
     required: true,
   },
-  houseID: {        // foreign key: houseID
-    type: Number,
-    required: true,
-  },
+  houseID: {   // Foreign Key: House ID
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'House'
+    },
   Category: {       // Enum: "Dairy", "Produce", "Non-perishable", etc
     type: String,
     required: true,
@@ -28,12 +28,12 @@ const foodSchema = new Schema({
     type: Date,
     required: false,
   },
-  lastBought: {     // foreing key: UserID
-    type: Number,
-    required: true,
+  lastBought: {   // Foreign Key: User ID
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   }
 });
 
-const foodObject = mongoose.model('foodObject', foodSchemaSchema);
+const foodObject = mongoose.model('FoodObject', foodSchema);
 
 module.exports = foodObject;

@@ -4,11 +4,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
-    userID: {   // Primary Key
-        type: Number,
-        required: true,
-    },
-    fisrtName: {
+    firstName: {
         type: String,
         required: true,
     },
@@ -25,8 +21,8 @@ const userSchema = new Schema({
         required: true,
     },
     houseID: {  // Foreign Key: houseID
-        type: Number,
-        required: false,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'House'
     }
 });
 

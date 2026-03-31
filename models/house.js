@@ -8,16 +8,12 @@ const houseSchema = new Schema({
     type: String,
     required: true,
   },
-  Admin:{   // Foreign Key: UserID
-    type:Number,
-    required:true,
+  Admin:{   // Foreign Key: User ID
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   },
   password: {
     type: String,
-    required: true,
-  },
-  houseID: {    // Primary key
-    type: Number,
     required: true,
   }
 });
