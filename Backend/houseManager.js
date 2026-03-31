@@ -10,7 +10,7 @@ function houseManager(app) {
 	// Create new house
 	router.post("/houses", async(req, res) => {
 		try{
-			const {Admin, HouseName} = req.body;
+			const {Admin, HouseName} = req.body; // Creator of house is admin by default
 			
 			// Ensure input is valid
 			if (!HouseName) {
