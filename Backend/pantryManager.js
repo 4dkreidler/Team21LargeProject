@@ -1,6 +1,7 @@
 // Importing necessities
 const express = require("express");
 const Food = require("../models/foodObject");
+const User = require("../models/user");
 
 // Function that server.js will call
 function pantryManager(app) {
@@ -12,7 +13,10 @@ function pantryManager(app) {
 			const{foodName, houseID, Category, Stock, price, expirationDate, userID} = req.body;
 			
 			// Fetch adding user for lastBought
-			const user = await User.findOne{userID};
+			const user = await User.findOne({userID});
+			if (!user) {
+				return res.status(404).json({message: "User not found. Please try again."}); // 404: not found	
+			}
 			const lastBought = '{${user.firstName} ${user.lastName}}';
 		
 			// Assign values
@@ -45,19 +49,25 @@ function pantryManager(app) {
 			const {foodName, Category, Stock, price, expirationDate, userID} = req.body; // Things that can be edited
 			
 			// Fetch editing user for lastBought
-			const user = await User.findOne{userID};
-			const lastBought = '{${user.firstName} ${user.lastName}}';
+			const user = await User.findOne({userID});
+			if (!user) {
+				return res.status(404).json({message: "User not found. Please try again."}); // 404: not found	
+			}
+			const lastBought = '${user.firstName} ${user.lastName}';
 
 			// Fetch food item for editing
 			const food = await Food.findById(id);
-
+			if (!food) {
+			    return res.status(404).json({message: "Item not found. Please try again."}); // 404: not found
+			}
+			
 			// Update changed values
 			if (foodName !== undefined) food.foodName = foodName; // If any of these were changed, the update object adds them
 			if (Category !== undefined) food.Category = Category;
 			if (Stock !== undefined) food.Stock = Stock;
 			if (price !== undefined) food.price = price;
 			if (expirationDate !== undefined) food.expirationDate = expirationDate;
-			food.lastBought == lastBought; // Inherently changes when someone edits
+			food.lastBought = lastBought; // Inherently changes when someone edits
 			await food.save();
 
 			// Return updated info
@@ -72,12 +82,15 @@ function pantryManager(app) {
 	});
 
 	// Delete item
-	router.delete("pantry/:id", async(req, res) => {
+	router.delete("/pantry/:id", async(req, res) => {
 		try {
 			const {id} = req.params;
 
 			// Fetch food item for deletion
 			const food = await Food.findById(id);
+			if (!food) {
+			    return res.status(404).json({message: "Item not found. Please try again."}); // 404: not found
+			}
 			await food.remove();
 
 			// Retun confirmation
@@ -91,12 +104,15 @@ function pantryManager(app) {
 	});
 
 	// Get specific item in pantry
-	router.get("pantry/:id", async(req, res) => {
+	router.get("/pantry/:id", async(req, res) => {
 		try {
 			const {id} = req.params;
 
 			// Retrieve food item
 			const food = await Food.findById(id);
+			if (!food) {
+			    return res.status(404).json({message: "Item not found. Please try again."}); // 404: not found
+			}
 			return res.status(200).json({food}); // 200: request successful
 		} catch(err) { // Safety net since interacting with database
 			console.error(err);
@@ -105,11 +121,11 @@ function pantryManager(app) {
 	});
 
 	// Get all items in pantry
-	router.get("pantry/:houseID", async(req, res) => {
+	router.get("/pantry/:houseID", async(req, res) => {
 		try {
 			const {houseID} = req.params;
 			const foods = await Food.find({houseID}); // Get all foods in this house
-			return res status(200).json({food: foods}); // 200: request successful
+			return res.status(200).json({food: foods}); // 200: request successful
 		} catch(err) { // Safety net since interacting with database
 			console.error(err);
 			return res.status(500).json({message: "Unexpected error. Please try again."}) // 500: server issue
@@ -118,5 +134,4 @@ function pantryManager(app) {
 
 	// Mount onto app
 	app.use("/api", router);
-
 }
