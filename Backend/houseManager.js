@@ -27,8 +27,14 @@ function houseManager(app) {
 			}			
 
 			// Fetch creating user for admin
-			const user = await User.findOne({Admin});
-
+			const user = await User.findOne({userID: Admin});
+			if (!user) {
+				return res.status(404).json({message: "User not found. Please try again."}); // 404: not found	
+			}
+			if (user.houseID) { // If already in a house
+    			return res.status(400).json({ message: "User already belongs to a house." }); // 400: bad request
+			}
+			
 			// Generate alphanumeric code
 			const passwordChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; // Character pool
 			let password = ""; // Empty password
@@ -64,7 +70,7 @@ function houseManager(app) {
 	// Join existing house
 	router.post("/houses/join", async(req, res) => {
 		try {
-			const { userID, password } = req.body;
+			const {userID, password} = req.body;
 
 			// Ensure input is valid
 			if (!password) // No password
@@ -74,10 +80,17 @@ function houseManager(app) {
 
 			// Fetch querying user and house
 			const user = await User.findOne({userID});
+			if (!user) {
+				return res.status(404).json({message: "User not found. Please try again."}); // 404: not found	
+			}
+			if (user.houseID) { // If already in a house
+    			return res.status(400).json({ message: "User already belongs to a house." }); // 400: bad request
+			}
 			const house = await House.findOne({password});
-			if (!house)
-				return res.status(404).json({message: "Code does not belong to any houses."})
-			
+			if (!house) {
+				return res.status(404).json({message: "Code does not belong to any houses."}); // 404: not found	
+			}
+				
 			// Update user's houseID
 			user.houseID = house.houseID;
 			await user.save();
@@ -93,6 +106,69 @@ function houseManager(app) {
 		}
 	});
 
+	// Leave current house
+	router.delete("/houses/:userID", async(req, res) => {
+		try {
+			const {userID} = req.params;
+
+			// Fetch user for deletion
+			const user = await User.findOne({userID});
+			if (!user) {
+				return res.status(404).json({message: "User not found. Please try again."}); // 404: not found	
+			}
+			if (!user.houseID) { // If not in a house
+    			return res.status(400).json({ message: "User not in a house." }); // 400: bad request
+			}
+
+			// Remove from house
+			user.houseID = null;
+			await user.save();
+
+			// Return updated info
+			return res.status(200).json({ // 200: request successful
+				message: "Successfully left house.",
+				user: {houseID: user.houseID}
+			});
+		} catch (err) { // Safety net since interacting with database
+			console.error(err);
+			return res.status(500).json({message: "Unexpected error. Please try again."}); // 500: server error
+		}
+	});
+
+	// Get all members of house
+	router.get("/houses/:houseID", async(req, res) => {
+	    try {
+	        const {houseID} = req.params;
+	        if (!houseID) {
+	            return res.status(400).json({ message: "Requested house not found. Please try again." }); // 400: bad request
+	        }
+	        
+	        const members = await User.find({houseID: houseID}); // Fetch all users in house
+	        return res.status(200).json({members: members}); // 200: request successful
+	    } catch (err) {
+	        console.error(err);
+	        return res.status(500).json({ message: "Unexpected error. Please try again." }); // 500: server error
+	    }
+	});
+
+	// Get one specific member from house
+	router.get("/houses/:houseID/:userID", async(req, res) => {
+	    try {
+		    const { houseID, userID } = req.params;
+	
+	        // Find the specific user in the house
+	        const member = await User.findOne({ houseID: houseID, userID: userID });
+	        if (!member) {
+	            return res.status(404).json({ message: "Member not found in this house." });
+	        }
+	
+	        return res.status(200).json({member: member}); // 200: request successful
+	    } catch (err) {
+	        console.error(err);
+	        return res.status(500).json({ message: "Unexpected error. Please try again." }); // 500: server error
+	    }
+	});
+	
 	// Mount onto app
 	app.use("/api", router);
 }
