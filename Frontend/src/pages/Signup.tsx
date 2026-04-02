@@ -16,15 +16,42 @@ const Signup: React.FC = () => {
     password: ""
   });
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     console.log("Form Data:", formData);
 
+    const obj = {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      password: formData.password
+    };
+
+    try {
+      const response = await fetch("http://localhost:5555/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(obj)
+      });
+
+      const res = await response.json();
+
+      if (res.error !== "") {
+        alert(res.error);
+      } else {
+        navigate("/verification", { state: { email: formData.email } });
+      }
+
+    } catch (err) {
+      console.log(err);
+    }
     
-    setTimeout(() => {
-      navigate("/Verification", { state: { email: formData.email } });
-    }, 500);
+    //setTimeout(() => {
+    //  navigate("/Verification", { state: { email: formData.email } });
+    //}, 500);
   };
 
   return (
