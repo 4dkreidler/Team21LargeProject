@@ -132,6 +132,30 @@ function pantryManager(app) {
 		}
 	}
 
+	// Search pantry items
+	router.get("/pantry/search", async(req, res) => {
+	    try {
+	        const { houseID, query } = req.query;
+	
+	        if (!query) {
+	            return res.status(400).json({message: "Search unable to be done. Please try again."}); // 400: bad request
+	        }
+	
+	        // Search through stored foods
+	        const foods = await Food.find({
+	            houseID: Number(houseID),
+	            foodName: {$regex: query, $options: "i"} // Canse insensitive
+	        });
+	
+	        // Return updated info
+	        return res.status(200).json({foods});
+	
+	    } catch(err) {
+	        console.error(err);
+	        return res.status(500).json({message: "Unexpected error. Please try again."}); // 500: unexpected error
+	    }
+	});
+
 	// Mount onto app
 	app.use("/api", router);
 }
