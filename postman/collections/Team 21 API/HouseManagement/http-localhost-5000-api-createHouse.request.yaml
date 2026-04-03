@@ -1,0 +1,15 @@
+$kind: http-request
+name: http://localhost:5000/api/houses
+url: http://localhost:5000/api/houses
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{\r
+
+    \  \"Admin\": \"64a5c1b2f1e2d3c4b5a6c7d8\",\r
+
+    \    \"HouseName\": \"My House\"\r
+
+    }"
