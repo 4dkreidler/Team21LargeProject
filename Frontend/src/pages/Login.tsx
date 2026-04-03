@@ -13,8 +13,32 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+
     console.log("Attempting login for:", email);
-    navigate("/home");
+
+    const obj = { email, password };
+
+    try {
+      const response = await fetch("http://localhost:5555/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(obj)
+      });
+
+      const res = await response.json();
+
+      if (res.id <= 0) {
+        alert("Invalid login");
+      } else {
+        console.log("Logged in:", res);
+        navigate("/home");
+      }
+
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
