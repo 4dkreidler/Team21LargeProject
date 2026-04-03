@@ -1,6 +1,7 @@
 const express = require('express');
 //const bodyParser = require('body-parser');
 const cors = require('cors');
+const path = require('path');
 const app = express();
 const MongoClient = require('mongodb').MongoClient;
 
@@ -39,7 +40,12 @@ app.use((req, res, next) =>
     next();
 });
 
+//Frontend integration
+app.use(express.static(path.join(__dirname, 'Frontend/dist')));
 
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'Frontend/dist', 'index.html'));
+});
 
 //Start server at Port 5000
 app.listen(5000, ()=> {
