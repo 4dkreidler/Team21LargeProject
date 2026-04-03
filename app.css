@@ -1,0 +1,212 @@
+/*BODY & CONTAINER*/
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "San Francisco", sans-serif;
+  background-color: white;
+  color: black;
+  overflow-x: hidden;
+}
+
+.container {
+  height: 100vh;
+  width: 100%;
+  position: relative;
+}
+
+/*HEADER*/
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30px 60px;
+  z-index: 10;
+}
+
+.logo {
+  font-size: 30px;
+  font-weight: 600;
+  color: black;
+}
+
+.login-btn {
+  background-color: black;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+/*HERO*/
+.hero {
+  text-align: center;
+  margin-top: 120px;
+  position: relative;
+  z-index: 10;
+}
+
+.title {
+  font-size: 44px;
+  font-weight: 600;
+  color: black;
+}
+
+.subtitle {
+  font-size: 18px;
+  color: #555;
+}
+
+/*CTA BUTTONS*/
+.cta-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 25px;
+}
+
+.btn {
+  padding: 16px 28px;
+  font-size: 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.btn.primary {
+  background-color: black;
+  color: white;
+  border: none;
+}
+
+.btn.primary:hover {
+  background-color: #222;
+  transform: translateY(-1px);
+}
+
+.btn.secondary {
+  background-color: white;
+  color: black;
+  border: 2px solid black;
+}
+
+.btn.secondary:hover {
+  background-color: #f0f0f0;
+  transform: translateY(-1px);
+}
+
+/*NOTIFICATIONS*/
+.notification {
+  position: absolute;
+  padding: 16px;
+  border-radius: 20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+  font-size: 14px;
+  z-index: 5;
+  backdrop-filter: blur(12px);
+  opacity: 0;
+  line-height: 1.3;
+  max-width: 280px;
+  word-wrap: break-word;
+
+  /* Center all content */
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* LEFT / RIGHT POSITIONING */
+.left { left: 40px; }
+.right { right: 40px; }
+
+/* RIGHT NOTIFICATIONS */
+.right.milk {
+  background-color: #007aff;
+  color: white;
+  white-space: normal;
+}
+
+.right.trash {
+  background-color: #f5f5f7;
+  color: black;
+}
+
+/* LEFT POLL */
+.left.poll {
+  background: #f5f5f7;
+  color: black;
+}
+
+/* LEFT NEW MEMBER */
+.left.newMember {
+  background: #f5f5f7;
+  color: black;
+  display: flex;
+  flex-direction: column; /* stacked image + text */
+  align-items: center;
+  padding: 16px;
+  border-radius: 20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+  gap: 8px;
+  max-width: 280px;
+  text-align: center;
+}
+
+.member-pic {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* LEFT PACKAGE DELIVERED */
+.left.packageDelivered {
+  background: #f5f5f7;
+  color: black;
+  padding: 16px;
+  border-radius: 20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+  max-width: 280px;
+  font-size: 14px;
+  line-height: 1.3;
+  text-align: center;
+}
+
+/*POLL OPTIONS*/
+.options {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;   /* stretch options to full width */
+  gap: 6px;
+}
+
+.option {
+  padding: 8px 12px;
+  border-radius: 15px;
+  background: white;
+  border: 1px solid #ddd;
+  text-align: center;
+  min-width: 200px;      /* keeps them nice and wide */
+}
+
+.option.selected {
+  background-color: #34c759;
+  color: white;
+  border: none;
+}
+
+/*FLOATING ANIMATION*/
+.float {
+  animation: floatUp 8s linear forwards;
+}
+
+@keyframes floatUp {
+  0% { top: 75%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 0%; opacity: 0; }
+}
