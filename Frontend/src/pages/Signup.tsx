@@ -4,6 +4,7 @@ import { Button } from "../components/Button";
 import { Input } from "../components/Input";
 import { Card } from "../components/Card";
 import { Layout } from "../components/Layout";
+import { buildPath } from '../utils/Path'; 
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ const Signup: React.FC = () => {
     };
 
     try {
-      const response = await fetch("http://localhost:5555/api/register", {
+      const response = await fetch(buildPath('api/register'), {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
