@@ -1,5 +1,5 @@
 const express = require('express');
-const bodyParser = require('body-parser');
+//const bodyParser = require('body-parser');
 const cors = require('cors');
 const app = express();
 const MongoClient = require('mongodb').MongoClient;
@@ -16,7 +16,7 @@ client.connect();
 
 //MIDDLEWARE
 app.use(cors());
-app.use(bodyParser);
+app.use(express.json());
 
 // ROUTES
 //app.use("/api", authRoutes);
@@ -33,6 +33,32 @@ app.use((req, res, next) =>
         'GET, POST, PATCH, DELETE, OPTIONS'
     );
     next();
+});
+
+app.post('/api/login', async (req, res, next) =>
+{
+    // incoming: login, password
+    // outgoing: id, firstName, lastName, error
+    var error = '';
+    const { email, password } = req.body;
+    
+    //MongoDB connection
+    const db = client.db('pantry');
+    const results = await
+    db.collection('users').find({email:email,password:password}).toArray();
+    
+    var id = -1;
+    var fn = '';
+    var ln = '';
+    if( results.length > 0 )
+    {
+        id = results[0]._id;
+        fn = results[0].firstName;
+        ln = results[0].lastName;
+    }
+
+    var ret = { id:id, firstName:fn, lastName:ln, error:''};
+    res.status(200).json(ret);
 });
 
 //Start server at Port 5000
