@@ -14,6 +14,12 @@ const url = process.env.MONGODB_URI;
 const client = new MongoClient(url);
 client.connect();
 
+//Mongoose connection
+const mongoose = require('mongoose');
+mongoose.connect(process.env.MONGODB_URI)
+.then(() => console.log('Mongoose connected'))
+.catch(err => console.log(err));
+
 //MIDDLEWARE
 app.use(cors());
 app.use(express.json());
@@ -21,6 +27,10 @@ app.use(express.json());
 //Add Authentication APIs
 var auth = require('./auth.js');
 auth.setApp( app, client );
+
+//Add House Management APIs
+var houseManager = require('./houseManager.js');
+houseManager.setApp( app );
 
 // ROUTES
 //app.use("/api", authRoutes);
