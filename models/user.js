@@ -21,8 +21,8 @@ const userSchema = new mongoose.Schema({
     },
     houseID: {  // Foreign Key: houseID
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'House'
+        ref: 'houses'
     }
 });
 
-export default mongoose.model('User', userSchema);
+export default mongoose.model('users', userSchema);

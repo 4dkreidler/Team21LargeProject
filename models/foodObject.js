@@ -10,7 +10,7 @@ const foodSchema = new Schema({
   },
   houseID: {   // Foreign Key: House ID
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'House'
+      ref: 'houses'
     },
   Category: {       // Enum: "Dairy", "Produce", "Non-perishable", etc
     type: String,
@@ -30,10 +30,10 @@ const foodSchema = new Schema({
   },
   lastBought: {   // Foreign Key: User ID
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'users'
   }
 });
 
-const foodObject = mongoose.model('FoodObject', foodSchema);
+const foodObject = mongoose.model('foodObjects', foodSchema);
 
 module.exports = foodObject;

@@ -10,7 +10,7 @@ const houseSchema = new Schema({
   },
   Admin:{   // Foreign Key: User ID
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'users'
   },
   password: {
     type: String,
@@ -18,6 +18,6 @@ const houseSchema = new Schema({
   }
 });
 
-const House = mongoose.model('House', houseSchema);
+const House = mongoose.model('houses', houseSchema);
 
 module.exports = House;
