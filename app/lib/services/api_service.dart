@@ -2,37 +2,35 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class ApiService {
-  // Pointing to your live DigitalOcean server with the /api prefix
-  static const String baseUrl = 'http://159.203.105.19:5000/api'; 
+  static const String baseUrl = 'http://159.203.105.19:5000/api';
 
   static Future<bool> login(String email, String password) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/login'), 
+        Uri.parse('$baseUrl/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'email': email, // Matching the field name in Login.tsx
+          'email': email,
           'password': password,
         }),
       );
 
-      print('Server Response Status: ${response.statusCode}');
-      print('Server Response Body: ${response.body}');
-
       if (response.statusCode == 200) {
         final res = jsonDecode(response.body);
-        // MongoDB returns a String ID; we check that it exists and isn't empty
-        return res['id'] != null && res['id'].toString().isNotEmpty;
+        
+        // Strict validation: Must have an ID, ID cannot be "-1", and ID cannot be empty
+        return res['id'] != null && 
+               res['id'].toString() != "-1" && 
+               res['id'].toString().isNotEmpty;
       } 
       return false;
     } catch (e) {
-      print('Connection Error: $e');
       return false;
     }
   }
   
   static Future<bool> register(String email, String password, String firstName, String lastName) async {
-     try {
+    try {
       final response = await http.post(
         Uri.parse('$baseUrl/register'), 
         headers: {'Content-Type': 'application/json'},
@@ -50,7 +48,6 @@ class ApiService {
       }
       return false;
     } catch (e) {
-      print('Register Error: $e');
       return false;
     }
   }
