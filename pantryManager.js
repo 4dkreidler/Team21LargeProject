@@ -22,6 +22,9 @@ exports.setApp = function (app, client) {
 				return res.status(404).json({message: "User not found. Please try again."}); // 404: not found	
 			}
 			const lastBought = objUserID; // Store user ID for lastBought to be used in future updates/deletes
+
+			const house = await db.collection('houses').findOne({_id: objHouseID});
+			if (!house) return res.status(404).json({message: "House not found"});
 		
 			// Assign values
 			const newFood = ({
@@ -30,7 +33,7 @@ exports.setApp = function (app, client) {
 				Category,
 				Stock,
 				price,
-				expirationDate,
+				expirationDate: expirationDate ? new Date(expirationDate) : null,
 				lastBought	
 			});
 			
@@ -76,7 +79,7 @@ exports.setApp = function (app, client) {
 			if (Category !== undefined) updatedFields.Category = Category;
 			if (Stock !== undefined) updatedFields.Stock = Stock;
 			if (price !== undefined) updatedFields.price = price;
-			if (expirationDate !== undefined) updatedFields.expirationDate = expirationDate;
+			if (expirationDate !== undefined) updatedFields.expirationDate = expirationDate ? new Date(expirationDate) : null;
 			updatedFields.lastBought = lastBought; // Inherently changes when someone edits
 			
 			await db.collection('foodObjects').updateOne(
