@@ -16,8 +16,8 @@ exports.setApp = function (app)
     {
         try
         {
-            const { Admin, HouseName } = req.body;
-
+            const { Admin, HouseName } = req.body; // Take in creating user ID and inputted house name
+            
             if (!HouseName)
                 return res.status(400).json({ error: "House name is required." });
 
@@ -68,8 +68,8 @@ exports.setApp = function (app)
     {
         try
         {
-            const { userID, password } = req.body;
-
+            const { userID, password } = req.body; // Take in joining user ID and house code
+            
             if (!password || password.length !== 6)
                 return res.status(400).json({ error: "Invalid code." });
 
@@ -107,7 +107,7 @@ exports.setApp = function (app)
     {
         try
         {
-            const { userID } = req.params;
+            const { userID } = req.params; // Take in leaving user ID 
 
             const user = await User.findById(userID);
             if (!user)
@@ -135,11 +135,11 @@ exports.setApp = function (app)
     // =========================
     // GET ALL MEMBERS IN HOUSE
     // =========================
-    app.get('/api/houses/:houseID', async (req, res) =>
+    app.get('/api/houses/:houseID', async (req, res) => 
     {
         try
         {
-            const { houseID } = req.params;
+            const { houseID } = req.params; // Take in house ID
 
             const members = await User.find({ houseID })
                 .select('-password'); // don't send passwords
@@ -163,8 +163,7 @@ exports.setApp = function (app)
     {
         try
         {
-            const { houseID, userID } = req.params;
-
+            const { houseID, userID } = req.params; // Take in house ID and requested user ID
             const member = await User.findOne({
                 _id: userID,
                 houseID: houseID
