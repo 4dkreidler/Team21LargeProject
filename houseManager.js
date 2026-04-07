@@ -1,13 +1,9 @@
 // houseManager.js
 
 require('express');
-const mongoose = require('mongoose');
+const {ObjectId} = require('mongodb');
 
-// Import models
-const House = require('./models/house');
-const User = require('./models/user');
-
-exports.setApp = function (app)
+exports.setApp = function (app, client)
 {
     // =========================
     // CREATE HOUSE
@@ -17,12 +13,16 @@ exports.setApp = function (app)
         try
         {
             const { Admin, HouseName } = req.body; // Take in creating user ID and inputted house name
-            
+
+	    // MongoDB connection
+	    const db = client.db('pantry');
+
             if (!HouseName)
                 return res.status(400).json({ error: "House name is required." });
 
             // Find admin user
-            const user = await User.findById(Admin);
+	    const adminID = new ObjectId(Admin);
+            const user = await db.collection('users').findOne({_id: adminID});
             if (!user)
                 return res.status(404).json({ error: "User not found." });
 
@@ -35,22 +35,24 @@ exports.setApp = function (app)
             for (let i = 0; i < 6; i++)
                 password += chars.charAt(Math.floor(Math.random() * chars.length));
 
-            const newHouse = new House({
+            const newHouse = ({
                 HouseName,
                 Admin: user._id,
                 password
             });
 
-            await newHouse.save();
+            const result = await db.collection('houses').insertOne(newHouse);
 
             // Update user with house reference
-            user.houseID = newHouse._id;
-            await user.save();
+            await db.collection('users').updateOne(
+              { _id: adminID },
+	    	      {$set: {houseID: result.insertedId}}
+	          )
 
             res.status(201).json({
                 message: "House created",
                 house: newHouse,
-                user: { id: user._id, houseID: user.houseID },
+                user: {houseID: result.insertedId},
                 error: ""
             });
         }
@@ -69,27 +71,33 @@ exports.setApp = function (app)
         try
         {
             const { userID, password } = req.body; // Take in joining user ID and house code
-            
+	          const db = client.db('pantry');
+
             if (!password || password.length !== 6)
                 return res.status(400).json({ error: "Invalid code." });
 
-            const user = await User.findById(userID);
+            const objUserID = new ObjectId(userID);
+	          const user = await db.collection('users').findOne({_id: objUserID});
+
             if (!user)
                 return res.status(404).json({ error: "User not found." });
 
             if (user.houseID)
                 return res.status(400).json({ error: "User already in a house." });
 
-            const house = await House.findOne({ password });
+            const house = await db.collection('houses').findOne({password});
+
             if (!house)
                 return res.status(404).json({ error: "House not found." });
 
-            user.houseID = house._id;
-            await user.save();
+            await db.collection('users').updateOne(
+              { _id: objUserID},
+	    	      {$set: {houseID: house._id}} 
+	          )
 
             res.status(200).json({
                 message: "Joined house",
-                user: { houseID: user.houseID },
+                user: {houseID: house._id},
                 error: ""
             });
         }
@@ -108,16 +116,21 @@ exports.setApp = function (app)
         try
         {
             const { userID } = req.params; // Take in leaving user ID 
+	          const db = client.db('pantry');
 
-            const user = await User.findById(userID);
+            const objUserID = new ObjectId(userID);
+	          const user = await db.collection('users').findOne({_id: objUserID});
+
             if (!user)
                 return res.status(404).json({ error: "User not found." });
 
             if (!user.houseID)
                 return res.status(400).json({ error: "User not in a house." });
 
-            user.houseID = null;
-            await user.save();
+            await db.collection('users').updateOne(
+              { _id: objUserID},
+	    	      {$set: {houseID: null}} 
+	          )
 
             res.status(200).json({
                 message: "Left house",
@@ -135,14 +148,16 @@ exports.setApp = function (app)
     // =========================
     // GET ALL MEMBERS IN HOUSE
     // =========================
-    app.get('/api/houses/:houseID', async (req, res) => 
+    app.get('/api/houses/:houseID', async (req, res) =>
     {
         try
         {
             const { houseID } = req.params; // Take in house ID
+	        const db = client.db('pantry');
 
-            const members = await User.find({ houseID })
-                .select('-password'); // don't send passwords
+            const objHouseID = new ObjectId(houseID);
+
+	        const members = await db.collection('users').find({houseID: objHouseID}).project({password: 0}).toArray();
 
             res.status(200).json({
                 members,
@@ -164,10 +179,18 @@ exports.setApp = function (app)
         try
         {
             const { houseID, userID } = req.params; // Take in house ID and requested user ID
-            const member = await User.findOne({
-                _id: userID,
-                houseID: houseID
-            }).select('-password');
+    	    const db = client.db('pantry');
+    
+    	    const objHouseID = new ObjectId(houseID);
+    	    const objUserID = new ObjectId(userID);
+
+            const member = await db.collection('users').findOne(
+                {
+                    houseID: objHouseID,
+                    _id: objUserID
+                },
+                {projection: {password: 0}}
+            );
 
             if (!member)
                 return res.status(404).json({ error: "Member not found." });
