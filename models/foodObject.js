@@ -10,7 +10,7 @@ const foodSchema = new Schema({
   },
   houseID: {   // Foreign Key: House ID
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'houses'
+      ref: 'House'
     },
   Category: {       // Enum: "Dairy", "Produce", "Non-perishable", etc
     type: String,

@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema({
     },
     houseID: {  // Foreign Key: houseID
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'houses'
+        ref: 'House'
     }
 });
 

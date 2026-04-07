@@ -21,7 +21,7 @@ exports.setApp = function (app, client) {
 			if (!user) {
 				return res.status(404).json({message: "User not found. Please try again."}); // 404: not found	
 			}
-			const lastBought = `${user.firstName} ${user.lastName}`;
+			const lastBought = objUserID; // Store user ID for lastBought to be used in future updates/deletes
 		
 			// Assign values
 			const newFood = ({
@@ -34,7 +34,7 @@ exports.setApp = function (app, client) {
 				lastBought	
 			});
 			
-			const result = await db.collection('foods').insertOne(newFood);
+			const result = await db.collection('foodObjects').insertOne(newFood);
 
 			// Return updated info
 			return res.status(201).json({ // 201: successfully created
@@ -65,7 +65,7 @@ exports.setApp = function (app, client) {
 			const lastBought = `${user.firstName} ${user.lastName}`;
 
 			// Fetch food item for editing
-			const food = await db.collection('foods').findOne({_id: objFoodID});
+			const food = await db.collection('foodObjects').findOne({_id: objFoodID});
 			if (!food) {
 			    return res.status(404).json({message: "Item not found. Please try again."}); // 404: not found
 			}
@@ -79,12 +79,12 @@ exports.setApp = function (app, client) {
 			if (expirationDate !== undefined) updatedFields.expirationDate = expirationDate;
 			updatedFields.lastBought = lastBought; // Inherently changes when someone edits
 			
-			await db.collection('foods').updateOne(
+			await db.collection('foodObjects').updateOne(
                 {_id: objFoodID},
                 {$set: updatedFields}
             );
 
-			const updatedFood = await db.collection('foods').findOne({_id: objFoodID});
+			const updatedFood = await db.collection('foodObjects').findOne({_id: objFoodID});
 
 			// Return updated info
 			return res.status(200).json({ // 200: request successful
@@ -106,12 +106,12 @@ exports.setApp = function (app, client) {
 			const objFoodID = new ObjectId(id);
 
 			// Fetch food item for deletion
-			const food = await db.collection('foods').findOne({ _id: objFoodID });
+			const food = await db.collection('foodObjects').findOne({ _id: objFoodID });
 			if (!food) {
 			    return res.status(404).json({message: "Item not found. Please try again."}); // 404: not found
 			}
 			
-			await db.collection('foods').deleteOne({ _id: objFoodID });
+			await db.collection('foodObjects').deleteOne({ _id: objFoodID });
 
 			// Retun confirmation
 			return res.status(200).json({ // 200: request successful
@@ -124,7 +124,7 @@ exports.setApp = function (app, client) {
 	});
 
 	// Get specific item in pantry
-	app.get("/pantry/:id", async(req, res) => {
+	app.get("/pantry/item/:id", async(req, res) => {
 		try {
 			const {id} = req.params; // Takes in ID of item being selected
 			const db = client.db('pantry');
@@ -132,7 +132,7 @@ exports.setApp = function (app, client) {
 			const objFoodID = new ObjectId(id);
 			
 			// Retrieve food item
-			const food = await db.collection('foods').findOne({_id: objFoodID});
+			const food = await db.collection('foodObjects').findOne({_id: objFoodID});
 			if (!food) {
 			    return res.status(404).json({message: "Item not found. Please try again."}); // 404: not found
 			}
@@ -144,13 +144,13 @@ exports.setApp = function (app, client) {
 	});
 
 	// Get all items in pantry
-	app.get("/pantry/:houseID", async(req, res) => {
+	app.get("/pantry/house/:houseID", async(req, res) => {
 		try {
 			const {houseID} = req.params; // Takes in ID of house with pantry being checked
 			const db = client.db('pantry');
 
 			const objHouseID = new ObjectId(houseID);
-			const foods = await db.collection('foods').find({houseID: objHouseID}).toArray();
+			const foods = await db.collection('foodObjects').find({houseID: objHouseID}).toArray();
 			
 			return res.status(200).json({food: foods}); // 200: request successful
 		} catch(err) { // Safety net since interacting with database
