@@ -116,17 +116,42 @@ exports.setApp = function (app, client)
         try
         {
             const { userID } = req.params; // Take in leaving user ID 
-	          const db = client.db('pantry');
+	        const db = client.db('pantry');
 
             const objUserID = new ObjectId(userID);
-	          const user = await db.collection('users').findOne({_id: objUserID});
-
+	    	const user = await db.collection('users').findOne({_id: objUserID});
+			
             if (!user)
                 return res.status(404).json({ error: "User not found." });
 
             if (!user.houseID)
                 return res.status(400).json({ error: "User not in a house." });
 
+			const house = await db.collection('houses').findOne({_id: user.houseID});
+			if (!house) 
+				return res.status(404).json({error: "House not found."});
+
+			// If user is admin
+			if (house.Admin.equals(objUserID))
+        	{
+				// Get other user in hosue to be new admin
+	            const newAdmin = await db.collection('users').findOne({
+	                houseID: user.houseID,
+	                _id: {$ne: objUserID}
+            	});
+	            if (newAdmin) // If other user found
+	            {
+	                await db.collection('houses').updateOne(
+	                    { _id: house._id },
+	                    {$set: {Admin: newAdmin._id}}
+	                );
+	            }
+	            else // If no other users in house
+	            {
+	                await db.collection('houses').deleteOne({_id: house._id});
+	            }
+       		}
+			
             await db.collection('users').updateOne(
               { _id: objUserID},
 	    	      {$set: {houseID: null}} 
@@ -135,6 +160,42 @@ exports.setApp = function (app, client)
             res.status(200).json({
                 message: "Left house",
                 user: { houseID: null },
+                error: ""
+            });
+        }
+        catch (err)
+        {
+            console.error(err);
+            res.status(500).json({ error: "Server error." });
+        }
+    });
+
+	// =========================
+    // GET SPECIFIC MEMBER
+    // =========================
+    app.get('/api/houses/:houseID/:userID', async (req, res) =>
+    {
+        try
+        {
+            const { houseID, userID } = req.params; // Take in house ID and requested user ID
+    	    const db = client.db('pantry');
+    
+    	    const objHouseID = new ObjectId(houseID);
+    	    const objUserID = new ObjectId(userID);
+
+            const member = await db.collection('users').findOne(
+                {
+                    houseID: objHouseID,
+                    _id: objUserID
+                },
+                {projection: {password: 0}}
+            );
+
+            if (!member)
+                return res.status(404).json({ error: "Member not found." });
+
+            res.status(200).json({
+                member,
                 error: ""
             });
         }
@@ -161,42 +222,6 @@ exports.setApp = function (app, client)
 
             res.status(200).json({
                 members,
-                error: ""
-            });
-        }
-        catch (err)
-        {
-            console.error(err);
-            res.status(500).json({ error: "Server error." });
-        }
-    });
-
-    // =========================
-    // GET SPECIFIC MEMBER
-    // =========================
-    app.get('/api/houses/:houseID/:userID', async (req, res) =>
-    {
-        try
-        {
-            const { houseID, userID } = req.params; // Take in house ID and requested user ID
-    	    const db = client.db('pantry');
-    
-    	    const objHouseID = new ObjectId(houseID);
-    	    const objUserID = new ObjectId(userID);
-
-            const member = await db.collection('users').findOne(
-                {
-                    houseID: objHouseID,
-                    _id: objUserID
-                },
-                {projection: {password: 0}}
-            );
-
-            if (!member)
-                return res.status(404).json({ error: "Member not found." });
-
-            res.status(200).json({
-                member,
                 error: ""
             });
         }
