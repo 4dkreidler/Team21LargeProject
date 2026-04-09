@@ -30,10 +30,10 @@ const foodSchema = new Schema({
   },
   lastBought: {   // Foreign Key: User ID
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'users'
   }
 });
 
-const foodObject = mongoose.model('FoodObject', foodSchema);
+const foodObject = mongoose.model('foodObjects', foodSchema);
 
 module.exports = foodObject;

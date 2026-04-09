@@ -1,0 +1,26 @@
+$kind: http-request
+name: http://localhost:5000/pantry
+url: http://localhost:5000/pantry
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{\r
+
+    \  \"foodName\": \"Broccoli\",\r
+
+    \  \"houseID\": \"69c8273b0ab541ab5a6d98e4\",\r
+
+    \  \"Category\": \"Produce\",\r
+
+    \  \"Stock\": 2,\r
+
+    \  \"price\": 1.84,\r
+
+    \  \"expirationDate\": \"2040-10-28T23:58:18.000+00:00\",\r
+
+    \  \"userID\": \"69c8258c0ab541ab5a6d98db\"\r
+
+    }"
+order: 1775595448251
