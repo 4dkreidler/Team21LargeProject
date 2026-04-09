@@ -1,52 +1,12 @@
-import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import React from "react";
+import { useLocation } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { Card } from "../components/Card";
 import envelope from "../assets/envelope.png";
 
 const Verification: React.FC = () => {
   const location = useLocation();
-  const navigate = useNavigate();
-
   const email = location.state?.email || "your email";
-
-  const [params] = useSearchParams();
-  const token = params.get("token");
-
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
-
-  // 🔥 VERIFY TOKEN ON LOAD
-  useEffect(() => {
-    if (!token) {
-      setStatus("error");
-      return;
-    }
-
-    const verifyEmail = async () => {
-      try {
-        const res = await fetch(
-          `http://localhost:8080/api/auth/verify?token=${token}`
-        );
-
-        const data = await res.json();
-
-        if (res.ok) {
-          setStatus("success");
-
-          // redirect after short delay
-          setTimeout(() => {
-            navigate("/verification-success");
-          }, 1500);
-        } else {
-          setStatus("error");
-        }
-      } catch (err) {
-        setStatus("error");
-      }
-    };
-
-    verifyEmail();
-  }, [token, navigate]);
 
   return (
     <Layout>
@@ -59,26 +19,12 @@ const Verification: React.FC = () => {
             Verify your email address
           </h1>
 
-          {/*  LOADING */}
-          {status === "loading" && (
-            <p className="text-gray-600 text-sm max-w-sm">
-              Verifying <span className="font-semibold">{email}</span>...
-            </p>
-          )}
-
-          {/*  SUCCESS */}
-          {status === "success" && (
-            <p className="text-green-600 text-sm">
-              Email verified! Redirecting...
-            </p>
-          )}
-
-          {/*  ERROR */}
-          {status === "error" && (
-            <p className="text-red-600 text-sm">
-              Invalid or expired verification link.
-            </p>
-          )}
+          <p className="text-gray-600 text-sm max-w-sm">
+            We've sent a verification link to{" "}
+            <span className="font-semibold">{email}</span>.
+            <br /><br />
+            Please check your inbox and click the link to verify your account.
+          </p>
 
         </div>
       </Card>

@@ -6,12 +6,14 @@ import nodemailer from "nodemailer";
 const router = express.Router();
 
 
+// =====================
 // EMAIL TRANSPORT
+// =====================
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
     user: "your_email@gmail.com",
-    pass: "your_app_password" // use app password, NOT real password
+    pass: "your_app_password"
   }
 });
 
@@ -28,14 +30,12 @@ router.post("/login", async (req, res) => {
     if (!user) {
       return res.json({
         id: -1,
-        firstName: "",
-        lastName: "",
         error: "Invalid email/password"
       });
     }
 
-    //  BLOCK if not verified
-    if (!user.isVerified) {
+    // 🚨 BLOCK if NOT verified
+    if (!user.validated) {
       return res.json({
         id: -1,
         error: "Please verify your email before logging in"
@@ -68,7 +68,7 @@ router.post("/register", async (req, res) => {
       return res.json({ error: "User already exists" });
     }
 
-    //  Generate token
+    // 🔑 Generate token
     const token = crypto.randomBytes(32).toString("hex");
 
     const newUser = new User({
@@ -76,15 +76,15 @@ router.post("/register", async (req, res) => {
       lastName,
       email,
       password,
-      isVerified: false,
+      validated: false,
       verificationToken: token,
-      verificationTokenExpires: Date.now() + 1000 * 60 * 30 // 30 mins
+      verificationTokenExpires: Date.now() + 1000 * 60 * 30 // 30 min
     });
 
     await newUser.save();
 
-    //  Send email
-    const verifyURL = `http://localhost:5173/verify?token=${token}`;
+    //  IMPORTANT: BACKEND VERIFY LINK
+    const verifyURL = `http://localhost:8080/api/auth/verify?token=${token}`;
 
     await transporter.sendMail({
       to: email,
@@ -105,7 +105,7 @@ router.post("/register", async (req, res) => {
 
 
 // =====================
-// VERIFY EMAIL
+// VERIFY EMAIL (REDIRECT VERSION)
 // =====================
 router.get("/verify", async (req, res) => {
   const { token } = req.query;
@@ -117,19 +117,22 @@ router.get("/verify", async (req, res) => {
     });
 
     if (!user) {
-      return res.status(400).json({ error: "Invalid or expired token" });
+      //  redirect to error page (optional)
+      return res.redirect("http://localhost:5173/verification-error");
     }
 
-    user.isVerified = true;
+    //  mark verified
+    user.validated = true;
     user.verificationToken = null;
     user.verificationTokenExpires = null;
 
     await user.save();
 
-    return res.json({ success: true });
+    //  redirect to success page
+    return res.redirect("http://localhost:5173/verification-success");
 
   } catch (err) {
-    return res.status(500).json({ error: err.toString() });
+    return res.redirect("http://localhost:5173/verification-error");
   }
 });
 
