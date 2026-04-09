@@ -3,10 +3,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Home from './pages/Home';
-import Verificiation from './pages/Verification';
-import { Navbar } from './components/Navbar';
-import SuccessVerification from './pages/SuccessVerification';
 import Verification from './pages/Verification';
+import SuccessVerification from './pages/SuccessVerification';
+import { Navbar } from './components/Navbar';
 
 
 const App: React.FC = () => {
@@ -19,8 +18,7 @@ const App: React.FC = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/home" element={<Home />} />
-          <Route path="/Verification" element={<Verificiation />} />
-          <Route path="/verify" element={<Verification />} />
+          <Route path="/verification" element={<Verification />} />
           <Route path="/verification-success" element={<SuccessVerification />} />
         </Routes>
       </div>
