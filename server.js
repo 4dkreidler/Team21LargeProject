@@ -1,6 +1,7 @@
 const express = require('express');
 //const bodyParser = require('body-parser');
 const cors = require('cors');
+const path = require('path');
 const app = express();
 const MongoClient = require('mongodb').MongoClient;
 
@@ -44,6 +45,12 @@ client.connect()
 
     // ROUTES
     //app.use("/api", authRoutes);
+//Frontend integration
+app.use(express.static(path.join(__dirname, 'Frontend/dist')));
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'Frontend/dist', 'index.html'));
+});
 
     app.use((req, res, next) =>
     {
