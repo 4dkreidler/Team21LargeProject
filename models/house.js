@@ -10,7 +10,7 @@ const houseSchema = new Schema({
   },
   Admin:{   // Foreign Key: User ID
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'users'
   },
   password: {
     type: String,
