@@ -1,5 +1,5 @@
 import express from "express";
-import User from "../../models/user.js";
+import User from "../models/user.js";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 
@@ -12,8 +12,8 @@ const router = express.Router();
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "your_email@gmail.com",
-    pass: "your_app_password"
+    user: "lucas.luna122403@gmail.com",
+    pass: "testLogin"
   }
 });
 
@@ -84,7 +84,7 @@ router.post("/register", async (req, res) => {
     await newUser.save();
 
     //  IMPORTANT: BACKEND VERIFY LINK
-    const verifyURL = `http://localhost:8080/api/auth/verify?token=${token}`;
+    const verifyURL = `http://localhost:5555/api/verify?token=${token}`;
 
     await transporter.sendMail({
       to: email,
@@ -118,7 +118,7 @@ router.get("/verify", async (req, res) => {
 
     if (!user) {
       //  redirect to error page (optional)
-      return res.redirect("http://localhost:5173/verification-error");
+      return res.redirect("http://localhost:5173/login");
     }
 
     //  mark verified
@@ -132,7 +132,7 @@ router.get("/verify", async (req, res) => {
     return res.redirect("http://localhost:5173/verification-success");
 
   } catch (err) {
-    return res.redirect("http://localhost:5173/verification-error");
+    return res.redirect("http://localhost:5173/login");
   }
 });
 
