@@ -36,7 +36,8 @@ const Login: React.FC = () => {
         const userData = {
             id: res.id,
             firstName: res.firstName,
-            lastName: res.lastName
+            lastName: res.lastName,
+            houseID: res.houseID || ""
           };
           localStorage.setItem("user_data", JSON.stringify(userData));
         navigate("/home");
