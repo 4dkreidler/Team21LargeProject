@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Layout } from "../components/Layout";
+import { buildPath } from "../utils/Path";
 
 interface Household {
   _id: string;
@@ -38,6 +39,12 @@ const Home: React.FC = () => {
       if (data.error) {
         alert(data.error);
       } else {
+        const newHouseEntry = {
+          _id: data.user.houseID,
+          name: houseName,
+          role: "Admin"
+        };
+        setHouseholds([newHouseEntry]);
         setGeneratedCode(data.house.password);
         setShowSuccessModal(true);
       }
@@ -65,6 +72,8 @@ const Home: React.FC = () => {
       if (data.error) {
         alert(data.error);
       } else {
+        const userUpdate = { ...storedUser, houseID: data.user.houseID };
+        localStorage.setItem('user_data', JSON.stringify(userUpdate));
         window.location.href = "/dashboard";
       }
     } catch (err) {
@@ -72,12 +81,69 @@ const Home: React.FC = () => {
     }
   };
 
+  const fetchMyHouses = async () => {
+  const storedUser = JSON.parse(localStorage.getItem('user_data') || '{}');
+  const userId = storedUser.id;
+
+  if (!userId) return;
+
+  try {
+    // Matches the logic in houseManager to fetch households for a user
+    const response = await fetch(`http://localhost:5000/api/houses/user/${userId}`);
+    const data = await response.json();
+
+    if (data.households) {
+      setHouseholds(data.households);
+    }
+  } catch (err) {
+    console.error("Error fetching households:", err);
+  } finally {
+    setLoading(false);
+  }
+};
+
+const handleSelectHouse = (houseID: string) => {
+  const storedUser = JSON.parse(localStorage.getItem('user_data') || '{}');
+  
+  // Update the stored user object with this specific houseID
+  const userUpdate = { ...storedUser, houseID: houseID };
+  localStorage.setItem('user_data', JSON.stringify(userUpdate));
+  
+  // Navigate to the dashboard
+  window.location.href = "/dashboard";
+};
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
+    const fetchMyHouse = async () => {
+      const storedUser = JSON.parse(localStorage.getItem('user_data') || '{}');
+      if (!storedUser.id) return;
+
+      try {
+        const url= buildPath(`api/houses/user/${storedUser.id}`);
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        if (data.households) {
+          setHouseholds(data.households);
+        }
+      } catch (err) {
+        console.error(err);
+        console.log("No households found for this user:", storedUser.id);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMyHouse();
   }, []);
+
+const finishCreate = () => {
+    const storedUser = JSON.parse(localStorage.getItem('user_data') || '{}');
+    // Dashboard can find houseID from localStorage
+    window.location.href = "/dashboard";
+  };
 
   return (
     <Layout>
@@ -131,9 +197,13 @@ const Home: React.FC = () => {
               <p className="text-gray-400 text-sm italic">Loading your households...</p>
             ) : households.length > 0 ? (
               <div className="flex flex-col gap-3">
-                {households.map((house) => (
-                  <div key={house._id} className="flex justify-between items-center p-4 bg-gray-50 rounded-xl hover:bg-blue-50 cursor-pointer transition-all border border-transparent hover:border-blue-200">
-                    <div>
+                {households.map((house) => (     
+                  <div 
+                      key={house._id} 
+                      onClick={() => handleSelectHouse(house._id)} // <-- ADD THIS LINE
+                      className="flex justify-between items-center p-4 bg-gray-50 rounded-xl hover:bg-blue-50 cursor-pointer transition-all border border-transparent hover:border-blue-200"
+                  >                  
+                   <div>
                       <p className="font-semibold text-blue-900">{house.name}</p>
                       <p className="text-xs text-gray-400 uppercase tracking-tighter">{house.role}</p>
                     </div>
@@ -162,12 +232,12 @@ const Home: React.FC = () => {
               <div className="bg-gray-100 p-4 rounded-2xl text-3xl font-mono font-bold tracking-widest text-blue-600 mb-6">
                 {generatedCode}
               </div>
-              <button 
-                onClick={() => window.location.href = "/dashboard"}
-                className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors"
-              >
-                Go to Dashboard
-              </button>
+            <button 
+              onClick={finishCreate} // <-- This will navigate to the dashboard
+              className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors"
+            >
+              Go to Dashboard
+            </button>
             </div>
           </div>
         )}
