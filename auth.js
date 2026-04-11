@@ -18,14 +18,16 @@ exports.setApp = function ( app, client )
     var id = -1;
     var fn = '';
     var ln = '';
+    var houseID = '';
     if( results.length > 0 )
     {
         id = results[0]._id;
         fn = results[0].firstName;
         ln = results[0].lastName;
+        houseID = results[0].houseID;
     }
 
-    var ret = { id:id, firstName:fn, lastName:ln, error:''};
+    var ret = { id:id, firstName:fn, lastName:ln, houseID:houseID, error:''};
     res.status(200).json(ret);
 });
 
