@@ -5,6 +5,6 @@ export const buildPath = (route: string) : string => {
     if (process.env.NODE_ENV === 'production') {
         return `http://${app_name}:5000/${route}`;
     } else {
-        return `http://${app_name}:5000/${route}`; 
+        return `http://localhost:5000/${route}`;
     }
 };

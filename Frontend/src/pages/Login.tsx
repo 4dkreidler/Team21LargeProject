@@ -19,7 +19,7 @@ const Login: React.FC = () => {
     const obj = { email, password };
 
     try {
-      const response = await fetch("http://localhost:5555/api/login", {
+      const response = await fetch("http://localhost:5000/api/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -33,6 +33,13 @@ const Login: React.FC = () => {
         alert("Invalid login");
       } else {
         console.log("Logged in:", res);
+        const userData = {
+            id: res.id,
+            firstName: res.firstName,
+            lastName: res.lastName,
+            houseID: res.houseID || ""
+          };
+          localStorage.setItem("user_data", JSON.stringify(userData));
         navigate("/home");
       }
 

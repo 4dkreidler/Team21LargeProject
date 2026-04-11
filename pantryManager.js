@@ -146,19 +146,32 @@ exports.setApp = function (app, client) {
 		}	
 	});
 
-	// Get all items in pantry
-	app.get("/pantry/house/:houseID", async(req, res) => {
+// Get items in pantry (supports partial matching search)
+	app.get("/pantry/:houseID", async(req, res) => {
 		try {
-			const {houseID} = req.params; // Takes in ID of house with pantry being checked
+			const { houseID } = req.params;
+			const { search } = req.query; // Capture the search text from the frontend
 			const db = client.db('pantry');
 
 			const objHouseID = new ObjectId(houseID);
-			const foods = await db.collection('foodObjects').find({houseID: objHouseID}).toArray();
 			
-			return res.status(200).json({food: foods}); // 200: request successful
-		} catch(err) { // Safety net since interacting with database
+			// Build the query
+			let query = { houseID: objHouseID };
+
+			// RUBRIC REQUIREMENT: Partial Search API
+			if (search) {
+				// $regex: search (the text)
+				// $options: 'i' (case-insensitive)
+				query.foodName = { $regex: search, $options: 'i' };
+			}
+
+			const foods = await db.collection('foodObjects').find(query).toArray();
+			
+			// Sending back 'items' to match the frontend state expectations
+			return res.status(200).json({ items: foods }); 
+		} catch(err) {
 			console.error(err);
-			return res.status(500).json({message: "Unexpected error. Please try again."}) // 500: server issue
-		}
-	});
+			return res.status(500).json({message: "Unexpected error."})
+    }
+});
 }
