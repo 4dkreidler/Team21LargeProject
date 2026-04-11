@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Layout } from "../components/Layout";
 
-// Define what a Household looks like for TypeScript
 interface Household {
   _id: string;
   name: string;
@@ -9,13 +8,71 @@ interface Household {
 }
 
 const Home: React.FC = () => {
-  // Start with an empty list. This will eventually be filled by an AJAX fetch call.
   const [households, setHouseholds] = useState<Household[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // This is where the AJAX-enabled API call will go to fetch the user's real data
+  const [showJoinInput, setShowJoinInput] = useState(false);
+  const [inviteCode, setInviteCode] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [generatedCode, setGeneratedCode] = useState("");
+
+  const handleCreateHouse = async () => {
+    const houseName = prompt("Enter a name for your Household:");
+    if (!houseName) return;
+
+    const storedUser = JSON.parse(localStorage.getItem('user_data') || '{}');
+    const userId = storedUser.id;
+
+    try {
+      const response = await fetch('http://localhost:5000/api/houses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          Admin: userId,
+          HouseName: houseName
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        alert(data.error);
+      } else {
+        setGeneratedCode(data.house.password);
+        setShowSuccessModal(true);
+      }
+    } catch (err) {
+      console.error("Creation Error:", err);
+    }
+  };
+
+  const handleJoinHouse = async () => {
+    const storedUser = JSON.parse(localStorage.getItem('user_data') || '{}');
+    const userId = storedUser.id;
+
+    try {
+      const response = await fetch('http://localhost:5000/api/houses/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userID: userId,
+          password: inviteCode 
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        alert(data.error);
+      } else {
+        window.location.href = "/dashboard";
+      }
+    } catch (err) {
+      console.error("Join Error:", err);
+    }
+  };
+
   useEffect(() => {
-    // simulate a small delay for the "loading" feel
     const timer = setTimeout(() => {
       setLoading(false);
     }, 500);
@@ -24,30 +81,52 @@ const Home: React.FC = () => {
 
   return (
     <Layout>
-      <div className="max-w-5xl w-full px-6 py-12 flex flex-col items-center">
+      <div className="max-w-5xl w-full px-6 py-12 flex flex-col items-center relative">
         <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-blue-900">YOUR HOUSEHOLDS</h1>
+          <h1 className="text-3xl font-bold text-blue-900 uppercase">Your Households</h1>
           <p className="text-gray-500 mt-2">Select a household to manage your pantry</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
           {/* Action Column */}
           <div className="flex flex-col gap-4">
-            <button className="bg-white p-6 rounded-2xl shadow-sm border border-blue-100 hover:border-blue-400 transition-all text-left group">
+            <button 
+               onClick={handleCreateHouse}
+               className="bg-white p-6 rounded-2xl shadow-sm border border-blue-100 hover:border-blue-400 transition-all text-left group">
               <h2 className="font-bold text-lg group-hover:text-blue-600 transition-colors">Create New Household</h2>
               <p className="text-sm text-gray-400">Start fresh and invite roommates</p>
             </button>
-            
-            <button className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:border-blue-400 transition-all text-left group">
-              <h2 className="font-bold text-lg group-hover:text-blue-600 transition-colors">Join Existing Household</h2>
-              <p className="text-sm text-gray-400">Enter a 6-digit invite code</p>
-            </button>
+
+            {!showJoinInput ? (
+              <button 
+                onClick={() => setShowJoinInput(true)}
+                className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:border-blue-400 transition-all text-left group"
+              >
+                <h2 className="font-bold text-lg group-hover:text-blue-600 transition-colors">Join Existing Household</h2>
+                <p className="text-sm text-gray-400">Enter a 6-digit invite code</p>
+              </button>
+            ) : (
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-blue-400 flex flex-col gap-3 p-6 transition-all">
+                <h2 className="font-bold text-blue-900">Enter Invite Code</h2>
+                <input 
+                  type="text"
+                  placeholder="e.g. A1B2C3"
+                  className="p-3 border rounded-xl outline-none focus:ring-2 ring-blue-500 text-lg tracking-widest"
+                  value={inviteCode}
+                  onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                  maxLength={6}
+                />
+                <div className="flex gap-2">
+                  <button onClick={handleJoinHouse} className="bg-blue-600 text-white px-4 py-2 rounded-xl flex-1 font-bold">Join</button>
+                  <button onClick={() => setShowJoinInput(false)} className="bg-gray-100 px-4 py-2 rounded-xl text-gray-600">Cancel</button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* List Column */}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 min-h-[300px]">
-            <h2 className="font-bold text-xl mb-4 border-b pb-2">Joined Households</h2>
-            
+            <h2 className="font-bold text-xl mb-4 border-b pb-2 text-blue-900">Joined Households</h2>
             {loading ? (
               <p className="text-gray-400 text-sm italic">Loading your households...</p>
             ) : households.length > 0 ? (
@@ -70,6 +149,28 @@ const Home: React.FC = () => {
             )}
           </div>
         </div>
+
+        {/* --- SUCCESS MODAL --- */}
+        {showSuccessModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+            <div className="bg-white p-8 rounded-3xl max-w-sm w-full text-center shadow-2xl">
+              <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                ✓
+              </div>
+              <h2 className="text-2xl font-bold text-blue-900 mb-2">Household Created!</h2>
+              <p className="text-gray-500 mb-6">Share this code with your roommates so they can join you.</p>
+              <div className="bg-gray-100 p-4 rounded-2xl text-3xl font-mono font-bold tracking-widest text-blue-600 mb-6">
+                {generatedCode}
+              </div>
+              <button 
+                onClick={() => window.location.href = "/dashboard"}
+                className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors"
+              >
+                Go to Dashboard
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </Layout>
   );
