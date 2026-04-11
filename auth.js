@@ -1,59 +1,136 @@
 require('express');
 require('mongodb');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto'); 
 
 exports.setApp = function ( app, client )
 {
+    const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+            user: "lucas.luna122403@gmail.com",
+            pass: "testLogin"
+        }
+    });
+
+    //login api
     app.post('/api/login', async (req, res, next) =>
-{
-    // incoming: login, password
-    // outgoing: id, firstName, lastName, error
-    var error = '';
-    const { email, password } = req.body;
-    
-    //MongoDB connection
-    const db = client.db('pantry');
-    const results = await
-    db.collection('users').find({email:email,password:password}).toArray();
-    
-    var id = -1;
-    var fn = '';
-    var ln = '';
-    if( results.length > 0 )
     {
-        id = results[0]._id;
-        fn = results[0].firstName;
-        ln = results[0].lastName;
-    }
+        // incoming: login, password
+        // outgoing: id, firstName, lastName, error
+        var error = '';
+        const { email, password } = req.body;
+        
+        //MongoDB connection
+        const db = client.db('pantry');
+        const results = await
+        db.collection('users').find({email:email,password:password}).toArray();
+        
+        var id = -1;
+        var fn = '';
+        var ln = '';
+        var hid = '';
+        if( results.length > 0 )
+        {
+            id = results[0]._id;
+            fn = results[0].firstName;
+            ln = results[0].lastName;
+            hid = results[0].houseID; 
+        }
 
-    var ret = { id:id, firstName:fn, lastName:ln, error:''};
-    res.status(200).json(ret);
-});
+        var ret = { id:id, firstName:fn, lastName:ln, houseID: hid, error:''};
+        res.status(200).json(ret);
+    });
 
-app.post('/api/register', async (req, res, next) =>
-{
-    // incoming: firstName, lastName, email, password
-    // outgoing: id, firstName, lastName, error
-    var error = '';
-    const { firstName, lastName, email, password } = req.body;
+    //register api
+    app.post('/api/register', async (req, res, next) =>
+    {
+        // incoming: firstName, lastName, email, password
+        // outgoing: id, firstName, lastName, error
+        var error = '';
+        const { firstName, lastName, email, password } = req.body;
+        var houseID = '-1'; 
 
-    //MongoDB connection
-    const db = client.db('pantry');
-    const existingUser = await db.collection('users').findOne({ email });
+        try {
+            //MongoDB connection
+            const db = client.db('pantry');
+            const existingUser = await db.collection('users').findOne({ email });
 
-    if (existingUser) {
-        return res.status(400).json({ error: "User already exists" });
-    }
+            //If user already exists 
+            if (existingUser) {
+                return res.status(400).json({ error: "User already exists" });
+            }
 
-    const newUser = {
-        firstName,
-        lastName,
-        email,
-        password
-    };
+            //Generate token for email verification
+            const token = crypto.randomBytes(32).toString("hex");
 
-    const result = await db.collection('users').insertOne(newUser);
+            //Create new User
+            const newUser = {
+                firstName,
+                lastName,
+                email,
+                password,
+                houseID,
+                validated: false,
+                verificationToken: token,
+                verificationTokenExpires: Date.now() + 1000 * 60 * 30 // 30 min
+            };
 
-    var ret = { id: result.insertedId, firstName: firstName, lastName: lastName, error: '' };
-    res.status(200).json(ret);
-});
+            //Insert new user into database
+            const result = await db.collection('users').insertOne(newUser);
+            
+            //Backend verify link
+            // const verifyURL = `http://localhost:5555/api/verify?token=${token}`;
+
+            // await transporter.sendMail({
+            //     to: email,
+            //     subject: "Verify your email",
+            //     html: `
+            //         <h2>Email Verification</h2>
+            //         <p>Click below to verify your account:</p>
+            //         <a href="${verifyURL}">${verifyURL}</a>
+            //     `
+            // });
+
+            //Return json with results 
+            var ret = { id: result.insertedId, firstName: firstName, lastName: lastName, error: error };
+            res.status(200).json(ret);
+        } catch(err){
+            //Return an error
+            return res.json({error: err.toString()});
+        }
+    });
+
+
+    //verify email api (redirect version)
+    app.get("/verify", async (req, res) => {
+        const { token } = req.query;
+
+        try {
+            //MongoDB connection
+            const db = client.db('pantry');
+            const user = await db.collection('users').findOne({ 
+                verificationToken: token,
+                verificationTokenExpires: { $gt: Date.now() } 
+            });
+
+            if (!user) {
+                //  redirect to error page 
+                return res.redirect("http://localhost:5173/login");
+            }
+
+            //  mark verified
+            await db.collection('users').updateOne(
+                {email: user.email },
+                {$set: {validated : true, verification : null, verificationTokenExpires : null}}
+            );
+
+            //  redirect to success page
+            return res.redirect("http://localhost:5173/verification-success");
+
+        } catch (err) {
+            return res.redirect("http://localhost:5173/login");
+        }
+    });
+
 }

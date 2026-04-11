@@ -67,8 +67,8 @@ app.get('*', (req, res) => {
     });
 
     //Start server at Port 5000 (after the DB connection is established)
-    app.listen(5000, ()=> {
-        console.log(`App is listenig to port : 5000`);
+    app.listen(5555, ()=> {
+        console.log(`App is listenig to port : 5555`);
     });
 })
 .catch(err => {
