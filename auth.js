@@ -2,15 +2,17 @@ require('express');
 require('mongodb');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto'); 
+require("node:dns/promises").setServers(["1.1.1.1", "8.8.8.8"]);
+require('dotenv').config();
 
 exports.setApp = function ( app, client )
 {
     const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-            user: "lucas.luna122403@gmail.com",
-            pass: "testLogin"
-        }
+    service: 'gmail.com',
+    auth: {
+        user: process.env.EMAIL_USERNAME,
+        pass: process.env.EMAIL_PASSWORD
+    }
     });
 
     //login api
@@ -80,24 +82,25 @@ exports.setApp = function ( app, client )
             const result = await db.collection('users').insertOne(newUser);
             
             //Backend verify link
-            // const verifyURL = `http://localhost:5555/api/verify?token=${token}`;
+            const verifyURL = `http://localhost:5555/api/verify?token=${token}`;
 
-            // await transporter.sendMail({
-            //     to: email,
-            //     subject: "Verify your email",
-            //     html: `
-            //         <h2>Email Verification</h2>
-            //         <p>Click below to verify your account:</p>
-            //         <a href="${verifyURL}">${verifyURL}</a>
-            //     `
-            // });
+            await transporter.sendMail({
+                to: email,
+                subject: "Verify your email",
+                html: `
+                    <h2>Email Verification</h2>
+                    <p>Click below to verify your account:</p>
+                    <a href="${verifyURL}">${verifyURL}</a>
+                `
+            });
 
             //Return json with results 
             var ret = { id: result.insertedId, firstName: firstName, lastName: lastName, error: error };
             res.status(200).json(ret);
         } catch(err){
             //Return an error
-            return res.json({error: err.toString()});
+            console.log(err.toString()); 
+            return res.json({error: 'Error: Internal Server Error'});
         }
     });
 

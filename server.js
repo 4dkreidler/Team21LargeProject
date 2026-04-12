@@ -4,7 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const app = express();
 const MongoClient = require('mongodb').MongoClient;
-
+ 
 // IMPORT ROUTES
 //import authRoutes from "./Backend/routes/auth.js";
 
@@ -14,6 +14,7 @@ require('dotenv').config();
 
 const url = process.env.MONGODB_URI;
 const client = new MongoClient(url);
+const PORT = 5555; 
 
 /*
 //Mongoose connection
@@ -43,14 +44,12 @@ client.connect()
     var pantryManager = require('./pantryManager.js');
     pantryManager.setApp( app, client );
 
-    // ROUTES
-    //app.use("/api", authRoutes);
-//Frontend integration
-app.use(express.static(path.join(__dirname, 'Frontend/dist')));
+    //Frontend integration
+    app.use(express.static(path.join(__dirname, 'Frontend/dist')));
 
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Frontend/dist', 'index.html'));
-});
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(__dirname, 'Frontend/dist', 'index.html'));
+    });
 
     app.use((req, res, next) =>
     {
@@ -67,8 +66,8 @@ app.get('*', (req, res) => {
     });
 
     //Start server at Port 5000 (after the DB connection is established)
-    app.listen(5555, ()=> {
-        console.log(`App is listenig to port : 5555`);
+    app.listen(PORT, ()=> {
+        console.log(`App is listenig to port : `+ PORT);
     });
 })
 .catch(err => {
