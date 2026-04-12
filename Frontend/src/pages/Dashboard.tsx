@@ -11,6 +11,10 @@ interface PantryItem {
 }
 
 const Dashboard: React.FC = () => {
+    if (!localStorage.getItem('user_data')) {
+        window.location.href = "/"; // Send them back to login
+    }
+
     const [items, setItems] = useState<PantryItem[]>([]);
     const [search, setSearch] = useState("");
     const [viewMode, setViewMode] = useState<"all" | "shopping">("all");
@@ -141,6 +145,9 @@ const updateStock = async (itemID: string, newStock: number) => {
 };
 
     useEffect(() => {
+        if (!localStorage.getItem('user_data')) {
+    window.location.href = "/"; // Send them back to login
+}
         fetchPantry();
     }, [search, houseID]); 
 // Logic: If 'shopping', only show items where Stock is 0
