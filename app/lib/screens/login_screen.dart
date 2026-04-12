@@ -28,7 +28,7 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 🔷 Title Section (matches React)
+          
           Column(
             children: const [
               Text(
@@ -53,7 +53,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
           const SizedBox(height: 30),
 
-          // 🧾 Card (matches React Card)
+          
           CardContainer(
             child: Column(
               children: [
@@ -77,7 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 15),
 
-                // 🔗 Signup link (React <a href="/signup">)
+                
                 GestureDetector(
                   onTap: () {
                     Navigator.pushNamed(context, '/signup');
