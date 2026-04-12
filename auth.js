@@ -125,9 +125,13 @@ exports.setApp = function ( app, client )
             }
 
             //user found but token expired
-            if(user[0].verificationTokenExpires <= Date.now()){
+            if(Date.now() >= user.verificationTokenExpires){
+                //delete user so they can reregister
+                await db.collection('users').deleteOne(
+                    {_id: user._id}
+                )
                 //redirect to error page
-                return res.redirect("http://localhost:5173/login");
+                return res.redirect("http://localhost:5173/signup");
             }
 
             //  mark verified
@@ -140,6 +144,7 @@ exports.setApp = function ( app, client )
             return res.redirect("http://localhost:5173/verification-success");
 
         } catch (err) {
+            console.log(err); 
             return res.redirect("http://localhost:5173/login");
         }
     });
