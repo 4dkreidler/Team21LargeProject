@@ -52,9 +52,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String userID = "";
   String firstName = "User";
 
-  // ===============================
-  // LOAD USER
-  // ===============================
+
   Future<void> loadUser() async {
     final prefs = await SharedPreferences.getInstance();
     final userData = prefs.getString('user_data');
@@ -69,9 +67,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  // ===============================
-  // FETCH PANTRY
-  // ===============================
+  
   Future<void> fetchPantry() async {
     if (houseID.isEmpty) return;
 
@@ -95,9 +91,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  // ===============================
-  // ADD ITEM
-  // ===============================
+  
   Future<void> handleAddItem() async {
     if (houseID.isEmpty || userID.isEmpty) {
       showError("Session error: Please log in again.");
@@ -143,9 +137,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // ===============================
-  // INIT
-  // ===============================
+  
   @override
   void initState() {
     super.initState();
@@ -157,9 +149,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     await fetchPantry();
   }
 
-  // ===============================
-  // UI
-  // ===============================
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -220,9 +210,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       ),
 
-      // ===============================
-      // MODAL
-      // ===============================
+      
       bottomSheet: showModal
           ? Container(
               padding: const EdgeInsets.all(16),
