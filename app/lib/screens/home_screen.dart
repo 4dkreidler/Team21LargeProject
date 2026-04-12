@@ -36,9 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool showSuccessModal = false;
   String generatedCode = "";
 
-  // ===============================
-  // GET USER FROM STORAGE
-  // ===============================
+  
   Future<Map<String, dynamic>> getUser() async {
     final prefs = await SharedPreferences.getInstance();
     final userData = prefs.getString('user_data');
@@ -51,9 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
     await prefs.setString('user_data', jsonEncode(user));
   }
 
-  // ===============================
-  // CREATE HOUSE
-  // ===============================
+  
   Future<void> handleCreateHouse() async {
     TextEditingController controller = TextEditingController();
 
@@ -114,9 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ===============================
-  // JOIN HOUSE
-  // ===============================
+  
   Future<void> handleJoinHouse() async {
     final user = await getUser();
     final userId = user['id'];
@@ -142,9 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // ===============================
-  // FETCH HOUSES
-  // ===============================
+  
   Future<void> fetchHouses() async {
     final user = await getUser();
     final userId = user['id'];
@@ -172,9 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // ===============================
-  // SELECT HOUSE
-  // ===============================
+  
   Future<void> selectHouse(String houseID) async {
     final user = await getUser();
     user['houseID'] = houseID;
@@ -203,9 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
     fetchHouses();
   }
 
-  // ===============================
-  // UI
-  // ===============================
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
