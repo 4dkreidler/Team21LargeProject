@@ -84,7 +84,33 @@ const handleAddItem = async (e: React.FormEvent) => {
         console.error("Add Item Error:", err);
     }
 };
+
+const handleDeleteItem = async (itemID: string, foodName: string) => {
+    // 1. Browser confirmation pop-up
+    const confirmDelete = window.confirm(`Are you sure you want to remove ${foodName} from the pantry?`);
+    if (!confirmDelete) return;
+
+    // 2. Build the URL (e.g., /pantry/65f...)
+    const url = buildPath(`pantry/${itemID}`);
     
+    try {
+        const response = await fetch(url, {
+            method: "DELETE" // Matches your app.delete route
+        });
+
+        if (response.ok) {
+            // 3. Optimized UI Update: Remove the item from state locally
+            // This makes the app feel "instant"
+            setItems(prevItems => prevItems.filter(item => item._id !== itemID));
+        } else {
+            const data = await response.json();
+            alert(data.message || "Failed to delete item.");
+        }
+    } catch (err) {
+        console.error("Delete Error:", err);
+        alert("An error occurred while deleting.");
+    }
+};
 
     useEffect(() => {
         fetchPantry();
@@ -138,7 +164,12 @@ const handleAddItem = async (e: React.FormEvent) => {
                                         <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-bold border border-blue-100">
                                             Qty: {item.Stock}
                                         </span>
-                                        <button className="text-gray-300 hover:text-red-500 transition-colors">🗑️</button>
+                                        <button 
+                                            onClick={() => handleDeleteItem(item._id, item.foodName)}
+                                            className="text-gray-300 hover:text-red-500 transition-colors"
+                                        >
+                                            🗑️
+                                        </button>
                                     </div>
                                 </div>
                             ))}
