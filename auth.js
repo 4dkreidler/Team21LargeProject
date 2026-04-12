@@ -82,7 +82,7 @@ exports.setApp = function ( app, client )
             const result = await db.collection('users').insertOne(newUser);
             
             //Backend verify link
-            const verifyURL = `http://localhost:5555/api/verify?token=${token}`;
+            const verifyURL = `http://localhost:5555/api/verify/${token}`;
 
             await transporter.sendMail({
                 to: email,
@@ -106,26 +106,34 @@ exports.setApp = function ( app, client )
 
 
     //verify email api (redirect version)
-    app.get("/verify", async (req, res) => {
-        const { token } = req.query;
+    app.get("/api/verify/:token", async (req, res) => {
+        const { token } = req.params;
 
         try {
             //MongoDB connection
             const db = client.db('pantry');
+
+            //find user with matching verification token
             const user = await db.collection('users').findOne({ 
-                verificationToken: token,
-                verificationTokenExpires: { $gt: Date.now() } 
+                verificationToken: token
             });
 
+            //No user found
             if (!user) {
                 //  redirect to error page 
+                return res.redirect("http://localhost:5173/login");
+            }
+
+            //user found but token expired
+            if(user[0].verificationTokenExpires <= Date.now()){
+                //redirect to error page
                 return res.redirect("http://localhost:5173/login");
             }
 
             //  mark verified
             await db.collection('users').updateOne(
                 {email: user.email },
-                {$set: {validated : true, verification : null, verificationTokenExpires : null}}
+                {$set: {validated : true, verificationToken : null, verificationTokenExpires : null}}
             );
 
             //  redirect to success page
