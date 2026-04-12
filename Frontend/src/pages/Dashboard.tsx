@@ -13,7 +13,7 @@ interface PantryItem {
 const Dashboard: React.FC = () => {
     const [items, setItems] = useState<PantryItem[]>([]);
     const [search, setSearch] = useState("");
-    
+    const [viewMode, setViewMode] = useState<"all" | "shopping">("all");
 // --- NEW STATE FOR ADD ITEM ---
     const [showModal, setShowModal] = useState(false);
     const [newItem, setNewItem] = useState({
@@ -115,7 +115,10 @@ const handleDeleteItem = async (itemID: string, foodName: string) => {
     useEffect(() => {
         fetchPantry();
     }, [search, houseID]); 
-
+// Logic: If 'shopping', only show items where Stock is 0
+const displayedItems = viewMode === "all" 
+    ? items 
+    : items.filter(item => item.Stock === 0);
     return (
         <Layout>
             <div className="p-6 max-w-4xl mx-auto">
@@ -133,7 +136,22 @@ const handleDeleteItem = async (itemID: string, foodName: string) => {
                         + Add Item
                     </button>
                 </div>
-                
+                {/* VIEW TOGGLE */}
+                <div className="flex bg-gray-100 p-1 rounded-xl mb-6 w-fit">
+                    <button 
+                        onClick={() => setViewMode("all")}
+                        className={`px-6 py-2 rounded-lg font-bold transition-all ${viewMode === 'all' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                    >
+                        All Items
+                    </button>
+                    <button 
+                        onClick={() => setViewMode("shopping")}
+                        className={`px-6 py-2 rounded-lg font-bold transition-all ${viewMode === 'shopping' ? 'bg-white text-red-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                    >
+                        Shopping List ({items.filter(i => i.Stock === 0).length})
+                    </button>
+                </div>
+
                 {/* SEARCH BAR */}
                 <div className="relative mb-8 group">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
@@ -150,9 +168,9 @@ const handleDeleteItem = async (itemID: string, foodName: string) => {
 
                 {/* ITEMS LIST */}
                 <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-                    {items.length > 0 ? (
+                    {displayedItems.length > 0 ? (
                         <div className="divide-y divide-gray-100">
-                            {items.map((item) => (
+                            {displayedItems.map((item) => (
                                 <div key={item._id} className="flex justify-between items-center p-5 hover:bg-gray-50 transition-colors">
                                     <div className="flex flex-col">
                                         <span className="font-semibold text-gray-800 uppercase tracking-tight">
@@ -161,9 +179,16 @@ const handleDeleteItem = async (itemID: string, foodName: string) => {
                                         <span className="text-xs text-gray-400">Inventory Item</span>
                                     </div>
                                     <div className="flex items-center gap-4">
-                                        <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-bold border border-blue-100">
-                                            Qty: {item.Stock}
+
+                         {/* OPTIONAL: Red badge for Out of Stock */}
+                                        <span className={`px-3 py-1 rounded-full text-sm font-bold border ${
+                                            item.Stock === 0 
+                                            ? 'bg-red-50 text-red-700 border-red-100' 
+                                            : 'bg-blue-50 text-blue-700 border-blue-100'
+                                        }`}>
+                                            {item.Stock === 0 ? "OUT" : `Qty: ${item.Stock}`}
                                         </span>
+
                                         <button 
                                             onClick={() => handleDeleteItem(item._id, item.foodName)}
                                             className="text-gray-300 hover:text-red-500 transition-colors"
@@ -176,8 +201,22 @@ const handleDeleteItem = async (itemID: string, foodName: string) => {
                         </div>
                     ) : (
                         <div className="flex flex-col items-center justify-center py-20 text-center">
-                            <p className="text-gray-400 font-medium">No items found in your pantry.</p>
-                            <p className="text-xs text-gray-300 mt-1">Try a different search or add a new item!</p>
+                            <p className="text-gray-400 font-medium">
+                                {viewMode === "all" ? "No items found in your pantry." : "Your shopping list is empty!"}
+                            </p>
+                            <p className="text-xs text-gray-300 mt-1 mb-4">
+                                {viewMode === "all" ? "Try a different search or add a new item!" : "Items with 0 quantity appear here automatically."}
+                            </p>
+                            
+                            {/* NEW: Manual Add button that only shows on shopping list view */}
+                            {viewMode === "shopping" && (
+                                <button 
+                                    onClick={() => setShowModal(true)}
+                                    className="bg-red-500 text-white px-6 py-2 rounded-xl font-bold hover:bg-red-600 transition-all shadow-md active:scale-95"
+                                >
+                                    + Add Needed Item
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>
