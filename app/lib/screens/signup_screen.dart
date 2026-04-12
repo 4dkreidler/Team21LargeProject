@@ -42,7 +42,7 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Layout(
-      child: SingleChildScrollView( // ✅ prevents overflow on small screens
+      child: SingleChildScrollView( 
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -113,7 +113,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
                   const SizedBox(height: 15),
 
-                  // 🔗 Login redirect (matches React <a href="/login">)
+                  
                   GestureDetector(
                     onTap: () {
                       Navigator.pushNamed(context, '/login');
