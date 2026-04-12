@@ -1,0 +1,852 @@
+/* ===== GLOBAL ===== */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+}
+
+/* ===== DASHBOARD ===== */
+.dashboard {
+  display: flex;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #eef2f7, #dce3ec);
+}
+
+/* ===== SIDEBAR (FIXED) ===== */
+.sidebar {
+  width: 220px;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(18px);
+  padding: 10px 20px;
+
+  border-right: 1px solid rgba(0, 0, 0, 0.05);
+
+  display: flex;
+  flex-direction: column;
+
+  /* 🔥 IMPORTANT FIX */
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+/* ===== LOGO ===== */
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  margin-top: 2px;
+  margin-bottom: 2px; /* tighter spacing */
+}
+
+.bag-icon-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.brand-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1b5e20;
+  line-height: 1;
+}
+
+/* ===== NAV ===== */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 0px; /* 🔥 pulls tabs directly under logo */
+}
+
+/* sidebar items */
+.sidebar-nav p {
+  padding: 8px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  margin: 0;
+  transition: 0.2s;
+  color: #333;
+}
+
+/* hover */
+.sidebar-nav p:hover {
+  background: rgba(0, 100, 0, 0.08);
+}
+
+/* ===== ACTIVE TAB ===== */
+.active-tab {
+  background: #1b5e20;
+  color: white !important;
+  font-weight: 600;
+}
+
+/* ===== SETTINGS (BOTTOM FIX) ===== */
+.sidebar-bottom {
+  margin-top: auto; /* 🔥 pushes settings to bottom properly */
+  padding-top: 10px;
+}
+
+.sidebar-bottom p {
+  padding: 8px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  margin: 0;
+  transition: 0.2s;
+}
+
+.sidebar-bottom p:hover {
+  background: rgba(0, 100, 0, 0.08);
+}
+
+/* ===== MAIN ===== */
+.main {
+  flex: 1;
+  padding: 25px;
+}
+
+/* ===== TOPBAR ===== */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+/* ===== GRID ===== */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+/* ===== CARDS ===== */
+.card {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px);
+  padding: 18px;
+  border-radius: 22px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+/* ===== ITEMS ===== */
+.item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 8px 0;
+}
+
+/* ===== ROOMMATES UPGRADE ===== */
+
+.roommate-item {
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #4f46e5;
+  color: white;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-size: 14px;
+}
+
+/* Status dot */
+.avatar::after {
+  content: "";
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.avatar.active::after {
+  background: #22c55e;
+}
+
+.avatar.away::after {
+  background: #facc15;
+}
+
+.avatar.offline::after {
+  background: #ef4444;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.name {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.last-seen {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* ===== TAGS ===== */
+.tag {
+  background: rgba(0,0,0,0.06);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.tag.red {
+  background: #ffd6d6;
+  color: #c40000;
+}
+
+/* ===== BUTTONS ===== */
+.green-btn {
+  background: #34c759;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.light-btn {
+  background: rgba(0,0,0,0.05);
+  border: none;
+  padding: 10px;
+  border-radius: 14px;
+}
+
+/* ===== MODAL ===== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(25px);
+  padding: 22px;
+  border-radius: 24px;
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Grocery list items */
+.grocery-item {
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.grocery-item:hover {
+  background: rgba(0,0,0,0.05);
+}
+
+/* Completed item */
+.grocery-item.done {
+  color: gray;
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+/* CENTER + SMALLER CARD */
+.pantry-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+.grocery-card {
+  width: 350px;
+}
+
+/* HEADER */
+.grocery-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ADD BUTTON */
+.add-btn {
+  background: #d1fae5;
+  color: #065f46;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* ITEM */
+.grocery-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.grocery-text {
+  cursor: pointer;
+}
+
+/* DONE */
+.grocery-item.done .grocery-text {
+  color: gray;
+  text-decoration: line-through;
+}
+
+/* UNDO BUTTON */
+.undo-btn {
+  background: transparent;
+  border: none;
+  color: #065f46;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+
+/* ===== PANTRY LAYOUT ===== */
+.pantry-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+/* Smaller centered card */
+.grocery-card {
+  width: 350px;
+}
+
+/* Header */
+.grocery-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Buttons */
+.header-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* Add button */
+.add-btn {
+  background: #d1fae5;
+  color: #065f46;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+/* Edit button */
+.edit-btn {
+  background: #f3f4f6;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+/* Items */
+.grocery-item {
+  display: flex;
+  justify-content: flex-start;
+  padding: 8px 0;
+}
+
+/* 🔥 THIS FIXES YOUR STRIKE + GREY ISSUE */
+.grocery-text {
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.grocery-text.done {
+  color: #9ca3af !important;
+  text-decoration: line-through !important;
+  opacity: 0.6 !important;
+}
+
+/* Edit panel */
+.edit-panel {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.edit-item {
+  display: flex;
+  justify-content: space-between;
+  margin: 6px 0;
+}
+
+/* Restore button */
+.restore-btn {
+  background: #d1fae5;
+  color: #065f46;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* Modals (keep if not already) */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  background: white;
+  padding: 20px;
+  border-radius: 20px;
+  width: 300px;
+}
+
+.danger-btn {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.no-household {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 80px;
+  gap: 15px;
+}
+
+.big-plus-box {
+  width: 120px;
+  height: 120px;
+  background: #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 60px;
+  border-radius: 20px;
+}
+
+.house-input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+}
+
+
+/* SETTINGS */
+.settings-page {
+  padding: 20px;
+}
+
+/* RED BUTTON */
+.danger-btn {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+/* INPUT */
+.house-input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+}
+
+/* SMALL TEXT */
+.small-text {
+  font-size: 12px;
+  color: #666;
+}
+
+.danger-btn {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.done {
+  text-decoration: line-through;
+  color: gray;
+  opacity: 0.6;
+}
+
+
+/* horizontal container */
+.roommates-row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+/* each roommate pill */
+.roommate-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px 12px;
+  border-radius: 16px;
+
+  background: rgba(255,255,255,0.6);
+  backdrop-filter: blur(10px);
+}
+
+/* avatar circle */
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: bold;
+  color: white;
+}
+
+/* status colors */
+.avatar.active {
+  background: #22c55e;
+}
+
+.avatar.away {
+  background: #f59e0b;
+}
+
+.avatar.offline {
+  background: #9ca3af;
+}
+
+/* info text */
+.roommate-info {
+  display: flex;
+  flex-direction: column;
+}
+
+/* name */
+.roommate-name {
+  font-weight: 600;
+}
+
+/* status row */
+.roommate-status {
+  font-size: 12px;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* status dot */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* dot colors */
+.status-dot.active {
+  background: #22c55e;
+}
+
+.status-dot.away {
+  background: #f59e0b;
+}
+
+.status-dot.offline {
+  background: #9ca3af;
+}
+
+.calendar-hint {
+  margin-top: 10px;
+  color: #999;
+  font-size: 13px;
+}
+
+/* =========================
+   CLEAN MODERN BLUE THEME
+========================= */
+
+/* background (soft cool gradient) */
+.dashboard {
+  background: linear-gradient(135deg, #eef4ff, #f7f9fc);
+}
+
+/* topbar glass look */
+.topbar {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 12px 18px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* cards = soft glass panels */
+.card {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(99, 102, 241, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+  transition: 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+}
+
+/* brand text = deep blue */
+.brand-text {
+  color: #3b82f6;
+}
+
+/* sidebar active tab */
+.active-tab {
+  background: #3b82f6;
+  color: white !important;
+}
+
+/* sidebar hover */
+.sidebar-nav p:hover {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+/* buttons */
+.green-btn {
+  background: #3b82f6;
+  color: white;
+  border-radius: 12px;
+  padding: 8px 12px;
+  border: none;
+  cursor: pointer;
+}
+
+.green-btn:hover {
+  background: #2563eb;
+}
+
+/* add button (soft blue outline style) */
+.add-btn {
+  background: #eff6ff;
+  color: #3b82f6;
+  border: 1px solid #3b82f6;
+  padding: 6px 10px;
+  border-radius: 12px;
+}
+
+/* edit button */
+.edit-btn {
+  background: #f3f4f6;
+  color: #333;
+  border-radius: 12px;
+  padding: 6px 10px;
+  border: none;
+}
+
+/* danger button */
+.danger-btn {
+  background: #fff1f2;
+  color: #e11d48;
+  border: 1px solid #fda4af;
+  padding: 10px;
+  border-radius: 12px;
+}
+
+/* roommate avatars */
+.avatar.active {
+  background: #22c55e;
+  color: white;
+}
+
+.avatar.away {
+  background: #f59e0b;
+  color: white;
+}
+
+.avatar.offline {
+  background: #9ca3af;
+  color: white;
+}
+
+/* status dots */
+.status-dot.active {
+  background: #22c55e;
+}
+
+.status-dot.away {
+  background: #f59e0b;
+}
+
+.status-dot.offline {
+  background: #9ca3af;
+}
+
+/* done items */
+.done {
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+
+/* modal polish */
+.modal {
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  border-radius: 18px;
+}
+
+/* sidebar hover polish */
+.sidebar-nav p {
+  transition: 0.2s;
+}
+
+/* =========================
+   TOPBAR LAYOUT FIX (LOGOUT BUTTON)
+========================= */
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* 🔥 keeps everything horizontal aligned */
+}
+
+/* ensures right side doesn't stack weirdly */
+.topbar button {
+  white-space: nowrap;
+}
+
+/* optional: makes logout feel properly sized */
+.logout-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.2s ease;
+  white-space: nowrap;
+}
+
+.logout-btn:hover {
+  background: #dc2626;
+}
+  /*display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}*/
+
+.modal-actions {
+  display: flex;
+  gap: 14px; /* 🔥 more space between buttons */
+  margin-top: 14px;
+}
+
+/* make buttons feel less cramped */
+.modal-actions button {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 12px;
+  
+}
+
+/* ===== ACTIVITY ===== */
+.activity-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.activity-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.activity-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #1b5e20;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.activity-time {
+  font-size: 11px;
+  color: #888;
+}
+
+.full-width {
+  width: 100%;
+  margin-top: 10px;
+}
+
+body.light {
+  background: #f6f7fb;
+}
+
+body.dark {
+  background: #12151c;
+  color: white;
+}
+
+.dark .card {
+  background: #1f2633;
+  color: white;
+}
+
+.dark .modal {
+  background: #1f2633;
+  color: white;
+}
+
+body {
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.card,
+.modal,
+.sidebar,
+.topbar {
+  transition: background 0.3s ease, color 0.3s ease;
+}
