@@ -22,7 +22,7 @@ exports.setApp = function(app, client)
     {
         //incoming: email 
         //outgoing: error
-        const email = req.body; 
+        const {email} = req.body; 
 
         try{
             //MongoDB connection
