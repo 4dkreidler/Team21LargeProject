@@ -62,6 +62,7 @@ exports.setApp = function(app, client)
                     <a href="${verifyURL}">${verifyURL}</a>
                 `
             });
+            return res.status(200).json({ message: "Email sent successfully" });
 
         }catch(err){
             console.log(err); 
