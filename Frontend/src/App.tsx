@@ -8,6 +8,7 @@ import SuccessVerification from './pages/SuccessVerification';
 import Verificiation from './pages/Verification';
 import Dashboard from './pages/Dashboard';
 import { Navbar } from './components/Navbar';
+import ResetingPassword from './pages/ResetingPassword';
 import Settings from './pages/Settings'
 import PasswordChange from './pages/PasswordChange';
 
@@ -23,9 +24,12 @@ const App: React.FC = () => {
           <Route path="/Settings" element={<Settings />} />
           <Route path="/dashboard" element={<Dashboard />} />
 	        <Route path="/" element={<Navigate to="/login" />} />
+          
           <Route path="/verification" element={<Verification />} />
           <Route path="/Verification" element={<Verificiation />} />
+        
           <Route path="/passwordChange" element={<PasswordChange />} />
+          <Route path="/reset-password/:id" element={<ResetingPassword />} />
  	        <Route path="/verification-success" element={<SuccessVerification />} />
         </Routes>
       </div>

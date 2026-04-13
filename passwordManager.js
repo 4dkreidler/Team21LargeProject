@@ -4,7 +4,7 @@ const nodemailer = require('nodemailer');
 const crypto = require('crypto'); 
 require("node:dns/promises").setServers(["1.1.1.1", "8.8.8.8"]);
 require('dotenv').config();
-import { buildPath } from "./Frontend/src/utils/Path";
+//import { buildPath } from "./Frontend/src/utils/Path";
 
 exports.setApp = function(app, client)
 {
@@ -22,7 +22,7 @@ exports.setApp = function(app, client)
     {
         //incoming: email 
         //outgoing: error
-        const email = req.body; 
+        const {email} = req.body; 
 
         try{
             //MongoDB connection
@@ -50,18 +50,19 @@ exports.setApp = function(app, client)
                 {$set: {verificationToken : token, verificationTokenExpires : Date.now() + 1000 * 60 * 30 }})//30 min token
 
             //Backend verify link
-            const verifyURL = `http://localhost:5555/resetpassword/${token}`;
+            const verifyURL = `http://localhost:5173/reset-password/${token}`;
 
             //send email
             await transporter.sendMail({
                 to: email,
                 subject: "Reset your password",
                 html: `
-                    <h2>Email Verification</h2>
-                    <p>Click below to verify your account:</p>
+                    <h2>Password Reset</h2>
+                    <p>Click below to change your password:</p>
                     <a href="${verifyURL}">${verifyURL}</a>
                 `
             });
+            return res.status(200).json({ message: "Email sent successfully" });
 
         }catch(err){
             console.log(err); 
@@ -70,7 +71,7 @@ exports.setApp = function(app, client)
     });
 
     //resetpassword
-    app.post('/resetpassword/:token', async(req, res) => 
+    app.post('/api/resetpassword/:token', async(req, res) => 
     {
         //incoming: newPassword
         //outoging: error
