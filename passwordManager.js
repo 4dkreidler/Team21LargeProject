@@ -70,7 +70,7 @@ exports.setApp = function(app, client)
     });
 
     //resetpassword
-    app.post('/resetpassword/:token', async(req, res) => 
+    app.post('/api/resetpassword/:token', async(req, res) => 
     {
         //incoming: newPassword
         //outoging: error
