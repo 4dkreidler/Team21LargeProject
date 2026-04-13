@@ -6,7 +6,7 @@ import { Button } from "../components/Button";
 const ResetingPassword: React.FC = () => {  
     const navigate = useNavigate(); 
 
-    const [email, setEmail] = useState("");
+  
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
 
@@ -57,20 +57,7 @@ const ResetingPassword: React.FC = () => {
                         onSubmit={handleSubmit}
                         className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
                     >
-                        {/* EMAIL */}
-                        <div className="mb-2">
-                            <label className="block text-gray-700 text-sm font-bold mb-2">
-                                Email Address
-                            </label>       
-                            <input
-                                type="email"
-                                placeholder="Email Address"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
-                                required
-                            />
-                        </div>
+                       
 
                         
                         {emailError && (
