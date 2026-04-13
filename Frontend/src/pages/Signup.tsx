@@ -8,6 +8,7 @@ import { buildPath } from '../utils/Path';
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
+  const [message, setMessage] = useState<string>("");
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -19,6 +20,7 @@ const Signup: React.FC = () => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setMessage("");
 
     console.log("Form Data:", formData);
 
@@ -40,19 +42,16 @@ const Signup: React.FC = () => {
 
       const res = await response.json();
 
-      if (res.error !== "") {
-        alert(res.error);
+      if (res.error && res.error.length > 0) {
+        setMessage(res.error);
       } else {
         navigate("/verification", { state: { email: formData.email } });
       }
 
-    } catch (err) {
+    } catch (err: any) {
       console.log(err);
+      setMessage("Unable to connect to server");
     }
-    
-    //setTimeout(() => {
-    //  navigate("/Verification", { state: { email: formData.email } });
-    //}, 500);
   };
 
   return (
@@ -108,6 +107,10 @@ const Signup: React.FC = () => {
             />
             
             <Button type="submit">Create Account</Button>
+
+            {message && (
+              <p className="text-sm text-red-500 text-center mt-1">{message}</p>
+            )}
 
             <p className="text-[10px] mt-2 text-gray-500">
               Already have an account? <br />

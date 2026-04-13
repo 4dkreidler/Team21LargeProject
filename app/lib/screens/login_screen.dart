@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import '../widgets/layout.dart';
 import '../widgets/card_container.dart';
 import '../widgets/custom_button.dart';
@@ -14,12 +16,63 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  
+  bool _isLoading = false;
 
-  void handleLogin() {
-    print("Attempting login for: ${emailController.text}");
+  Future<void> handleLogin() async {
+    setState(() => _isLoading = true);
+    const String url = "http://159.203.105.19:5000/api/login";
 
-    // Navigate to home (same as React navigate("/home"))
-    Navigator.pushNamed(context, '/home');
+    final Map<String, String> loginData = {
+      "email": emailController.text.trim(),
+      "password": passwordController.text,
+    };
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(loginData),
+      );
+
+      if (response.statusCode == 200) {
+        final res = jsonDecode(response.body);
+
+        // Matches React logic: if (res.id <= 0) alert("Invalid login")
+        if (res['id'] != null && res['id'] > 0) {
+          print("Logged in: $res");
+          if (!mounted) return;
+          
+          // Clear stack and go home (prevents going back to login)
+          Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+        } else {
+          _showError("Invalid login. Please check your credentials.");
+        }
+      } else {
+        _showError("Server error: ${response.statusCode}");
+      }
+    } catch (err) {
+      print("Login Error: $err");
+      _showError("Could not connect to the server.");
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.redAccent,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -70,10 +123,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                CustomButton(
-                  text: "Login",
-                  onPressed: handleLogin,
-                ),
+                _isLoading
+                    ? const CircularProgressIndicator()
+                    : CustomButton(
+                        text: "Login",
+                        onPressed: handleLogin,
+                      ),
 
                 const SizedBox(height: 15),
 

@@ -1,6 +1,3 @@
-//model/model.js
-
-import { type } from 'express/lib/response';
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
@@ -15,20 +12,26 @@ const userSchema = new mongoose.Schema({
     email:{
         type:String,
         required:true,
+        unique: true
     },
     password: {
         type: String,
         required: true,
     },
-    houseID: {  // Foreign Key: houseID
+
+    houseID: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'House'
     },
+
+    
     validated: {
         type: Boolean,
-        default: false,
-        required: false
-    }
+        default: false
+    },
+
+    verificationToken: String,
+    verificationTokenExpires: Date
 });
 
 export default mongoose.model('users', userSchema);
