@@ -22,16 +22,12 @@ class _LoginScreenState extends State<LoginScreen> {
   String message = "";
   bool isLoading = false;
 
-  // ===============================
-  // BUILD PATH (React equivalent)
-  // ===============================
+  
   String buildPath(String route) {
     return "http://10.0.2.2:5000/$route";
   }
 
-  // ===============================
-  // LOGIN
-  // ===============================
+  
   Future<void> handleSubmit() async {
     setState(() {
       isLoading = true;
@@ -57,7 +53,7 @@ class _LoginScreenState extends State<LoginScreen> {
       } else if (res["id"] == null || res["id"] <= 0) {
         setState(() => message = "Invalid email or password");
       } else {
-        // ✅ Save user (same as React)
+        
         final user = {
           "firstName": res["firstName"],
           "lastName": res["lastName"],
@@ -85,9 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // ===============================
-  // UI
-  // ===============================
+  
   @override
   Widget build(BuildContext context) {
     return Layout(
@@ -143,7 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: handleSubmit,
                       ),
 
-                // ✅ MESSAGE (NEW)
+                // 
                 if (message.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   Text(
