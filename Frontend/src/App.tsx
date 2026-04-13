@@ -5,8 +5,10 @@ import Signup from './pages/Signup';
 import Home from './pages/Home';
 import Verification from './pages/Verification';
 import SuccessVerification from './pages/SuccessVerification';
+import Verificiation from './pages/Verification';
+import Dashboard from './pages/Dashboard';
 import { Navbar } from './components/Navbar';
-
+import Settings from './pages/Settings'
 
 const App: React.FC = () => {
   return (
@@ -20,6 +22,9 @@ const App: React.FC = () => {
           <Route path="/home" element={<Home />} />
           <Route path="/verification" element={<Verification />} />
           <Route path="/verification-success" element={<SuccessVerification />} />
+          <Route path="/Verification" element={<Verificiation />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/Settings" element={<Settings />} />
         </Routes>
       </div>
     </Router>

@@ -170,6 +170,49 @@ exports.setApp = function (app, client)
         }
     });
 
+    // =========================
+    // GET HOUSE FOR USER
+    // =========================
+    app.get('/api/houses/user/:userID', async (req, res) => {
+        try {
+            const { userID } = req.params;
+            const db = client.db('pantry');
+
+            // 1. VALIDATION: Check if userID is a valid 24-character hex string
+            if (!userID || userID.length !== 24) {
+                console.log("Invalid or missing UserID received:", userID);
+                return res.status(200).json({ households: [] });
+            }
+
+            // 2. Safely create the ObjectId
+            const objUserID = new ObjectId(userID);
+
+            // 3. Find the user
+            const user = await db.collection('users').findOne({ _id: objUserID });
+            
+            if (!user || !user.houseID) {
+                return res.status(200).json({ households: [] });
+            }
+
+            // 4. Find the house (Safe check for houseID as well)
+            const house = await db.collection('houses').findOne({ _id: new ObjectId(user.houseID) });
+
+            if (!house) {
+                return res.status(200).json({ households: [] });
+            }
+
+            res.status(200).json({
+                households: [{
+                    _id: house._id.toString(),
+                    name: house.HouseName,
+                    role: house.Admin.toString() === user._id.toString() ? "Admin" : "Member"
+                }]
+            });
+        } catch (err) {
+            console.error("Internal Server Error:", err);
+            res.status(500).json({ error: "Internal Server Error" });
+        }
+    });
 	// =========================
     // GET SPECIFIC MEMBER
     // =========================
@@ -231,4 +274,4 @@ exports.setApp = function (app, client)
             res.status(500).json({ error: "Server error." });
         }
     });
-};
+}

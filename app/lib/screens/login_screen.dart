@@ -81,9 +81,9 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 🔷 Title Section
-          const Column(
-            children: [
+          
+          Column(
+            children: const [
               Text(
                 "PARCEL PANTRY",
                 style: TextStyle(
@@ -106,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
           const SizedBox(height: 30),
 
-          // 🧾 Card
+          
           CardContainer(
             child: Column(
               children: [
@@ -132,7 +132,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 15),
 
-                // 🔗 Signup link
+                
                 GestureDetector(
                   onTap: () {
                     Navigator.pushNamed(context, '/signup');

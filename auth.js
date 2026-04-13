@@ -17,32 +17,32 @@ exports.setApp = function ( app, client )
 
     //login api
     app.post('/api/login', async (req, res, next) =>
+{
+    // incoming: login, password
+    // outgoing: id, firstName, lastName, error
+    var error = '';
+    const { email, password } = req.body;
+    
+    //MongoDB connection
+    const db = client.db('pantry');
+    const results = await
+    db.collection('users').find({email:email,password:password}).toArray();
+    
+    var id = -1;
+    var fn = '';
+    var ln = '';
+    var houseID = '';
+    if( results.length > 0 )
     {
-        // incoming: login, password
-        // outgoing: id, firstName, lastName, error
-        var error = '';
-        const { email, password } = req.body;
-        
-        //MongoDB connection
-        const db = client.db('pantry');
-        const results = await
-        db.collection('users').find({email:email,password:password}).toArray();
-        
-        var id = -1;
-        var fn = '';
-        var ln = '';
-        var hid = '';
-        if( results.length > 0 )
-        {
-            id = results[0]._id;
-            fn = results[0].firstName;
-            ln = results[0].lastName;
-            hid = results[0].houseID; 
-        }
+        id = results[0]._id;
+        fn = results[0].firstName;
+        ln = results[0].lastName;
+        houseID = results[0].houseID;
+    }
 
-        var ret = { id:id, firstName:fn, lastName:ln, houseID: hid, error:''};
-        res.status(200).json(ret);
-    });
+    var ret = { id:id, firstName:fn, lastName:ln, houseID:houseID, error:''};
+    res.status(200).json(ret);
+});
 
     //register api
     app.post('/api/register', async (req, res, next) =>
