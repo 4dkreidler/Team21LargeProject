@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
+import { Button } from "../components/Button";
 
 const PasswordChange: React.FC = () => {  
     const navigate = useNavigate(); 
@@ -118,12 +119,12 @@ const PasswordChange: React.FC = () => {
                         )}
 
                         <div className="flex items-center justify-between">
-                            <button
+                            <Button
                                 type="submit"
                                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                             >
                                 Change Password
-                            </button>
+                            </Button>
                         </div>
 
                        
