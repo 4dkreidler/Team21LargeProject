@@ -165,7 +165,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       GestureDetector(
                         onTap: () =>
-                            Navigator.pushNamed(context, "/passwordchange"),
+                            Navigator.pushNamed(context, "/passwordChange"),
                         child: const Text(
                           "Reset Password",
                           style: TextStyle(
