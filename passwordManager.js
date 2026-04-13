@@ -57,8 +57,8 @@ exports.setApp = function(app, client)
                 to: email,
                 subject: "Reset your password",
                 html: `
-                    <h2>Email Verification</h2>
-                    <p>Click below to verify your account:</p>
+                    <h2>Password Reset</h2>
+                    <p>Click below to change your password:</p>
                     <a href="${verifyURL}">${verifyURL}</a>
                 `
             });
