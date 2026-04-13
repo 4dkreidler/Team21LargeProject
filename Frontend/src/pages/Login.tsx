@@ -82,7 +82,7 @@ const Login: React.FC = () => {
             <p className="mt-3 text-sm text-red-500 text-center">{message}</p>
           )}
 
-          {/* ✅ FIXED FORGOT PASSWORD */}
+          
           <div className="mt-4 text-xs text-left">
             <p className="text-gray-600">
               Forgot your password? <br />
