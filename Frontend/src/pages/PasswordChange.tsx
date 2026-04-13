@@ -14,35 +14,35 @@ const PasswordChange: React.FC = () => {
     const [showModal, setShowModal] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+        e.preventDefault();
 
-    setError("");
-    setEmailError("");
+        setError("");
+        setEmailError("");
 
-    try {
-        const response = await fetch("http://localhost:5555/api/emailpassword", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ email }) // IMPORTANT
-        });
+        try {
+            const response = await fetch("http://localhost:5555/api/emailpassword", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ email }) // IMPORTANT
+            });
 
-        const data = await response.json();
+            const data = await response.json();
 
-        if (!response.ok) {
-            setError(data.error || "Something went wrong");
-            return;
-        }
+            if (!response.ok) {
+                setError(data.error || "Something went wrong");
+                return;
+            }
 
-        // success → show modal
-        setShowModal(true);
+            // success → show modal
+            setShowModal(true);
 
-        } catch (err) {
-        console.log(err);
-        setError("Server error");
-        }
-    };
+            } catch (err) {
+            console.log(err);
+            setError("Server error");
+            }
+        };
 
     return (
         <Layout>
