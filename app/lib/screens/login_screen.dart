@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../widgets/layout.dart';
 import '../widgets/card_container.dart';
 import '../widgets/custom_button.dart';
@@ -16,56 +18,64 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  
-  bool _isLoading = false;
 
-  Future<void> handleLogin() async {
-    setState(() => _isLoading = true);
-    const String url = "http://159.203.105.19:5000/api/login";
+  String message = "";
+  bool isLoading = false;
 
-    final Map<String, String> loginData = {
+  // ===============================
+  // BUILD PATH (React equivalent)
+  // ===============================
+  String buildPath(String route) {
+    return "http://10.0.2.2:5000/$route";
+  }
+
+  // ===============================
+  // LOGIN
+  // ===============================
+  Future<void> handleSubmit() async {
+    setState(() {
+      isLoading = true;
+      message = "";
+    });
+
+    final obj = {
       "email": emailController.text.trim(),
-      "password": passwordController.text,
+      "password": passwordController.text
     };
 
     try {
       final response = await http.post(
-        Uri.parse(url),
+        Uri.parse(buildPath("api/login")),
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode(loginData),
+        body: jsonEncode(obj),
       );
 
-      if (response.statusCode == 200) {
-        final res = jsonDecode(response.body);
+      final res = jsonDecode(response.body);
 
-        // Matches React logic: if (res.id <= 0) alert("Invalid login")
-        if (res['id'] != null && res['id'] > 0) {
-          print("Logged in: $res");
-          if (!mounted) return;
-          
-          // Clear stack and go home (prevents going back to login)
-          Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
-        } else {
-          _showError("Invalid login. Please check your credentials.");
-        }
+      if (res["error"] != null && res["error"].toString().isNotEmpty) {
+        setState(() => message = res["error"]);
+      } else if (res["id"] == null || res["id"] <= 0) {
+        setState(() => message = "Invalid email or password");
       } else {
-        _showError("Server error: ${response.statusCode}");
+        // ✅ Save user (same as React)
+        final user = {
+          "firstName": res["firstName"],
+          "lastName": res["lastName"],
+          "id": res["id"]
+        };
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString("user_data", jsonEncode(user));
+
+        if (!mounted) return;
+        Navigator.pushNamedAndRemoveUntil(
+            context, "/home", (route) => false);
       }
     } catch (err) {
-      print("Login Error: $err");
-      _showError("Could not connect to the server.");
+      setState(() => message = "Unable to connect to server");
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) setState(() => isLoading = false);
     }
-  }
-
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.redAccent,
-      ),
-    );
   }
 
   @override
@@ -75,19 +85,22 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  // ===============================
+  // UI
+  // ===============================
   @override
   Widget build(BuildContext context) {
     return Layout(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          
+          // HEADER
           Column(
             children: const [
               Text(
                 "PARCEL PANTRY",
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: 26,
                   fontWeight: FontWeight.bold,
                   color: Colors.blue,
                 ),
@@ -106,7 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
           const SizedBox(height: 30),
 
-          
+          // CARD
           CardContainer(
             child: Column(
               children: [
@@ -123,29 +136,82 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                _isLoading
+                isLoading
                     ? const CircularProgressIndicator()
                     : CustomButton(
                         text: "Login",
-                        onPressed: handleLogin,
+                        onPressed: handleSubmit,
                       ),
+
+                // ✅ MESSAGE (NEW)
+                if (message.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    message,
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+
+                const SizedBox(height: 20),
+
+                // RESET PASSWORD
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Forgot your password?",
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                      GestureDetector(
+                        onTap: () =>
+                            Navigator.pushNamed(context, "/passwordChange"),
+                        child: const Text(
+                          "Reset Password",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.blue,
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
 
                 const SizedBox(height: 15),
 
-                
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pushNamed(context, '/signup');
-                  },
-                  child: const Text(
-                    "Don't have an account?\nSign up",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                      decoration: TextDecoration.underline,
-                      fontWeight: FontWeight.w600,
-                    ),
+                // SIGN UP
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Don't have an account?",
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                      GestureDetector(
+                        onTap: () =>
+                            Navigator.pushNamed(context, "/signup"),
+                        child: const Text(
+                          "Sign up",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.blue,
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
