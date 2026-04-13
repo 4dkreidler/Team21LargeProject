@@ -1,15 +1,30 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 
 const PasswordChange: React.FC = () => {  
     const navigate = useNavigate(); 
 
+    const [email, setEmail] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [error, setError] = useState("");
+    const [showModal, setShowModal] = useState(false);
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // TODO: connect to backend
-        alert("Password changed (placeholder)");
-        navigate("/"); 
+        setError("");
+
+        // ✅ Password match validation
+        if (newPassword !== confirmPassword) {
+            setError("Passwords do not match.");
+            return;
+        }
+
+        // TODO: connect to backend here
+
+        // ✅ Show success modal
+        setShowModal(true);
     };
 
     return (
@@ -38,6 +53,8 @@ const PasswordChange: React.FC = () => {
                             <input
                                 type="email"
                                 placeholder="Email Address"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
                                 required
                             />
@@ -50,6 +67,8 @@ const PasswordChange: React.FC = () => {
                             <input
                                 type="password"
                                 placeholder="New Password"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
                                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
                                 required
                             />
@@ -62,10 +81,17 @@ const PasswordChange: React.FC = () => {
                             <input
                                 type="password"
                                 placeholder="Confirm New Password"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
                                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
                                 required
                             />
                         </div>
+
+                        {/* ✅ Error message */}
+                        {error && (
+                            <p className="text-red-500 text-sm mb-4">{error}</p>
+                        )}
 
                         <div className="flex items-center justify-between">
                             <button
@@ -74,11 +100,11 @@ const PasswordChange: React.FC = () => {
                             >
                                 Change Password
                             </button>
-                        </div>
 
-                        <div className="flex items-center justify-between mt-4">
+                            {/* ✅ Cancel button */}
                             <button
-                                type="submit"   
+                                type="button"
+                                onClick={() => navigate("/")}
                                 className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
                             >
                                 Cancel
@@ -87,6 +113,26 @@ const PasswordChange: React.FC = () => {
                     </form>
                 </div>
             </div>
+
+            {/* ✅ Success Modal */}
+            {showModal && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-80 text-center">
+                        <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                            Password Updated
+                        </h2>
+                        <p className="text-gray-600 mb-6">
+                            Your password has been successfully changed.
+                        </p>
+                        <button
+                            onClick={() => navigate("/")}
+                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full"
+                        >
+                            Back to Login
+                        </button>
+                    </div>
+                </div>
+            )}
         </Layout>
     );
 };
