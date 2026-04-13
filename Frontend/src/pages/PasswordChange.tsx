@@ -3,13 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 
 const PasswordChange: React.FC = () => {  
-    const navigate = useNavigate(); // ✅ must be inside component
+    const navigate = useNavigate(); 
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         // TODO: connect to backend
         alert("Password changed (placeholder)");
-        navigate("/"); // go back to login after change
+        navigate("/"); 
     };
 
     return (
@@ -33,11 +33,11 @@ const PasswordChange: React.FC = () => {
                     >
                         <div className="mb-4">
                             <label className="block text-gray-700 text-sm font-bold mb-2">
-                                Current Password
+                                Email Address
                             </label>       
                             <input
-                                type="password"
-                                placeholder="Current Password"
+                                type="email"
+                                placeholder="Email Address"
                                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
                                 required
                             />
@@ -73,6 +73,15 @@ const PasswordChange: React.FC = () => {
                                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                             >
                                 Change Password
+                            </button>
+                        </div>
+
+                        <div className="flex items-center justify-between mt-4">
+                            <button
+                                type="submit"   
+                                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                            >
+                                Cancel
                             </button>
                         </div>
                     </form>
