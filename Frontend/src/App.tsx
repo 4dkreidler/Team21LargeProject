@@ -25,7 +25,7 @@ const App: React.FC = () => {
 	        <Route path="/" element={<Navigate to="/login" />} />
           <Route path="/verification" element={<Verification />} />
           <Route path="/Verification" element={<Verificiation />} />
-          <Route path="/password-change" element={<PasswordChange />} />
+          <Route path="/passwordChange" element={<PasswordChange />} />
  	        <Route path="/verification-success" element={<SuccessVerification />} />
         </Routes>
       </div>

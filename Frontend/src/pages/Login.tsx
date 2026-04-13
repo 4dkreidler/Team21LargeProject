@@ -94,7 +94,7 @@ const Login: React.FC = () => {
                 <div className="mt-4 text-xs text-left">
                   <p className="text-gray-600">
                     Forgot your password? <br />
-                    <a href="/forgot-password" className="underline font-semibold">
+                    <a href="/passwordChange" className="underline font-semibold">
                       Reset Password
                     </a>
                   </p>
