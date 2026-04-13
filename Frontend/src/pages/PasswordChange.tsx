@@ -8,21 +8,40 @@ const PasswordChange: React.FC = () => {
     const [email, setEmail] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+
     const [error, setError] = useState("");
+    const [emailError, setEmailError] = useState(""); 
     const [showModal, setShowModal] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError("");
 
-        
+        setError("");
+        setEmailError("");
+
+        // ✅ Password match validation
         if (newPassword !== confirmPassword) {
             setError("Passwords do not match.");
             return;
         }
 
-        
-        setShowModal(true);
+        try {
+            // 🔥 MOCK BACKEND (replace later)
+            // simulate email check
+            const fakeRegisteredEmails = ["test@gmail.com", "user@email.com"];
+
+            if (!fakeRegisteredEmails.includes(email)) {
+                setEmailError("Email address not registered.");
+                return;
+            }
+
+            // ✅ If email exists → success
+            setShowModal(true);
+
+        } catch (err) {
+            console.log(err);
+            setError("Something went wrong.");
+        }
     };
 
     return (
@@ -44,7 +63,8 @@ const PasswordChange: React.FC = () => {
                         onSubmit={handleSubmit}
                         className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
                     >
-                        <div className="mb-4">
+                        {/* EMAIL */}
+                        <div className="mb-2">
                             <label className="block text-gray-700 text-sm font-bold mb-2">
                                 Email Address
                             </label>       
@@ -58,6 +78,12 @@ const PasswordChange: React.FC = () => {
                             />
                         </div>
 
+                        {/* ✅ EMAIL ERROR UNDER INPUT */}
+                        {emailError && (
+                            <p className="text-red-500 text-sm mb-4">{emailError}</p>
+                        )}
+
+                        {/* NEW PASSWORD */}
                         <div className="mb-4">  
                             <label className="block text-gray-700 text-sm font-bold mb-2">
                                 New Password
@@ -72,6 +98,7 @@ const PasswordChange: React.FC = () => {
                             />
                         </div>
 
+                        {/* CONFIRM PASSWORD */}
                         <div className="mb-4">
                             <label className="block text-gray-700 text-sm font-bold mb-2">
                                 Confirm New Password
@@ -86,7 +113,7 @@ const PasswordChange: React.FC = () => {
                             />
                         </div>
 
-                       
+                        {/* GENERAL ERROR */}
                         {error && (
                             <p className="text-red-500 text-sm mb-4">{error}</p>
                         )}
@@ -98,27 +125,23 @@ const PasswordChange: React.FC = () => {
                             >
                                 Change Password
                             </button>
-                        
                         </div>
 
-
-                    <div className="mt-4 text-xs text-left">    
-                        <button
+                        {/* CANCEL */}
+                        <div className="mt-4 text-xs text-left">    
+                            <button
                                 type="button"
                                 onClick={() => navigate("/")}
                                 className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
                             >
                                 Cancel
                             </button>
-
-                    </div>
-
-
+                        </div>
                     </form>
                 </div>
             </div>
 
-           
+            {/* SUCCESS MODAL */}
             {showModal && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                     <div className="bg-white rounded-lg shadow-lg p-6 w-80 text-center">
