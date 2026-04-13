@@ -205,6 +205,7 @@ exports.setApp = function (app, client)
                 households: [{
                     _id: house._id.toString(),
                     name: house.HouseName,
+                    password: house.password,
                     role: house.Admin.toString() === user._id.toString() ? "Admin" : "Member"
                 }]
             });
