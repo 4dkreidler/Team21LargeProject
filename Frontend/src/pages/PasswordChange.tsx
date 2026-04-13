@@ -19,15 +19,14 @@ const PasswordChange: React.FC = () => {
         setError("");
         setEmailError("");
 
-        // ✅ Password match validation
+        
         if (newPassword !== confirmPassword) {
             setError("Passwords do not match.");
             return;
         }
 
         try {
-            // 🔥 MOCK BACKEND (replace later)
-            // simulate email check
+            
             const fakeRegisteredEmails = ["test@gmail.com", "user@email.com"];
 
             if (!fakeRegisteredEmails.includes(email)) {
@@ -35,7 +34,7 @@ const PasswordChange: React.FC = () => {
                 return;
             }
 
-            // ✅ If email exists → success
+            
             setShowModal(true);
 
         } catch (err) {
@@ -78,7 +77,7 @@ const PasswordChange: React.FC = () => {
                             />
                         </div>
 
-                        {/* ✅ EMAIL ERROR UNDER INPUT */}
+                        
                         {emailError && (
                             <p className="text-red-500 text-sm mb-4">{emailError}</p>
                         )}
@@ -98,7 +97,7 @@ const PasswordChange: React.FC = () => {
                             />
                         </div>
 
-                        {/* CONFIRM PASSWORD */}
+                       
                         <div className="mb-4">
                             <label className="block text-gray-700 text-sm font-bold mb-2">
                                 Confirm New Password
@@ -113,7 +112,7 @@ const PasswordChange: React.FC = () => {
                             />
                         </div>
 
-                        {/* GENERAL ERROR */}
+                       
                         {error && (
                             <p className="text-red-500 text-sm mb-4">{error}</p>
                         )}
@@ -127,7 +126,7 @@ const PasswordChange: React.FC = () => {
                             </button>
                         </div>
 
-                        {/* CANCEL */}
+                       
                         <div className="mt-4 text-xs text-left">    
                             <button
                                 type="button"
@@ -141,7 +140,7 @@ const PasswordChange: React.FC = () => {
                 </div>
             </div>
 
-            {/* SUCCESS MODAL */}
+         
             {showModal && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                     <div className="bg-white rounded-lg shadow-lg p-6 w-80 text-center">
