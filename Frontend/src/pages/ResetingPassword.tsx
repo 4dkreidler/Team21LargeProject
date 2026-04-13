@@ -28,12 +28,6 @@ const ResetingPassword: React.FC = () => {
 
         try {
             
-            const fakeRegisteredEmails = ["test@gmail.com", "user@email.com"];
-
-            if (!fakeRegisteredEmails.includes(email)) {
-                setEmailError("Email address not registered.");
-                return;
-            }
 
             
             setShowModal(true);
