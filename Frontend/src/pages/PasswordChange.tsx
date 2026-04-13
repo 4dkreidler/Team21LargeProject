@@ -84,34 +84,10 @@ const PasswordChange: React.FC = () => {
                         )}
 
                         {/* NEW PASSWORD */}
-                        <div className="mb-4">  
-                            <label className="block text-gray-700 text-sm font-bold mb-2">
-                                New Password
-                            </label>
-                            <input
-                                type="password"
-                                placeholder="New Password"
-                                value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value)}
-                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
-                                required
-                            />
-                        </div>
+                        
 
                        
-                        <div className="mb-4">
-                            <label className="block text-gray-700 text-sm font-bold mb-2">
-                                Confirm New Password
-                            </label>
-                            <input
-                                type="password"
-                                placeholder="Confirm New Password"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
-                                required
-                            />
-                        </div>
+                        
 
                        
                         {error && (
