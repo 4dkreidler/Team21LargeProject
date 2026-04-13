@@ -79,11 +79,25 @@ const Login: React.FC = () => {
                     required
                   />
                   <Button type="submit">Login</Button>
+
+                  
+
+
                 </form>
       
                 {message && (
                   <p className="mt-3 text-sm text-red-500 text-center">{message}</p>
                 )}
+
+
+                <div className="mt-4 text-xs text-left">
+                  <p className="text-gray-600">
+                    Forgot your password? <br />
+                    <a href="/forgot-password" className="underline font-semibold">
+                      Reset Password
+                    </a>
+                  </p>
+                </div>
       
                 <div className="mt-4 text-xs text-left">
                   <p className="text-gray-600">
