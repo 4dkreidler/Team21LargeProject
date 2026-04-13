@@ -20,12 +20,9 @@ const PasswordChange: React.FC = () => {
         setEmailError("");
 
         
-        if (newPassword !== confirmPassword) {
-            setError("Passwords do not match.");
-            return;
-        }
+        
 
-        try {
+        
             
             const fakeRegisteredEmails = ["test@gmail.com", "user@email.com"];
 

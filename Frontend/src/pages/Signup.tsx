@@ -13,7 +13,6 @@ const Signup: React.FC = () => {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
-    username: "",
     email: "",
     password: ""
   });
@@ -83,12 +82,7 @@ const Signup: React.FC = () => {
               }
             />
 
-            <Input 
-              label="Username"
-              onChange={(e) =>
-                setFormData({ ...formData, username: e.target.value })
-              }
-            />
+            
 
             <Input 
               label="Email"
