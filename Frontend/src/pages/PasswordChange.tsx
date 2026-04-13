@@ -21,9 +21,7 @@ const PasswordChange: React.FC = () => {
             return;
         }
 
-        // TODO: connect to backend here
-
-        // ✅ Show success modal
+        
         setShowModal(true);
     };
 
