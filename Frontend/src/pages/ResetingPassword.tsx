@@ -46,7 +46,7 @@ const ResetingPassword: React.FC = () => {
                 return;
             }
 
-            // ✅ success
+            
             setShowModal(true);
 
         } catch (err) {
