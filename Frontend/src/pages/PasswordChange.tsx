@@ -6,6 +6,8 @@ import { Card } from "../components/Card";
 import { Layout } from "../components/Layout";
 import { buildPath } from '../utils/Path'; 
 
+const navigate = useNavigate(); 
+
 const PasswordChange: React.FC = () => {  
     return (
         <Layout>
