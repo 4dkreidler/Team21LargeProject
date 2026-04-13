@@ -24,10 +24,12 @@ const App: React.FC = () => {
           <Route path="/Settings" element={<Settings />} />
           <Route path="/dashboard" element={<Dashboard />} />
 	        <Route path="/" element={<Navigate to="/login" />} />
+          
           <Route path="/verification" element={<Verification />} />
           <Route path="/Verification" element={<Verificiation />} />
+        
           <Route path="/passwordChange" element={<PasswordChange />} />
-          <Route path="/reset-password" element={<ResetingPassword />} />
+          <Route path="/reset-password/:id" element={<ResetingPassword />} />
  	        <Route path="/verification-success" element={<SuccessVerification />} />
         </Routes>
       </div>

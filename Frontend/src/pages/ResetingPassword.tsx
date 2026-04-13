@@ -5,7 +5,7 @@ import { Button } from "../components/Button";
 
 const ResetingPassword: React.FC = () => {  
     const navigate = useNavigate(); 
-    const { token } = useParams(); 
+    const { id } = useParams(); 
 
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -25,13 +25,13 @@ const ResetingPassword: React.FC = () => {
         }
 
   
-        if (!token) {
+        if (!id) {
             setError("Invalid or missing reset token.");
             return;
         }
 
         try {
-            const response = await fetch(`http://localhost:5555/api/resetpassword/${token}`, {
+            const response = await fetch(`http://localhost:5555/api/resetpassword/${id}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
