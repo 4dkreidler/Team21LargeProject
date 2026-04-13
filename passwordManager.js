@@ -4,7 +4,7 @@ const nodemailer = require('nodemailer');
 const crypto = require('crypto'); 
 require("node:dns/promises").setServers(["1.1.1.1", "8.8.8.8"]);
 require('dotenv').config();
-import { buildPath } from "./Frontend/src/utils/Path";
+//import { buildPath } from "./Frontend/src/utils/Path";
 
 exports.setApp = function(app, client)
 {

@@ -36,6 +36,10 @@ client.connect()
     var auth = require('./auth.js');
     auth.setApp( app, client );
 
+
+    var passwordManager = require('./passwordManager.js');
+    passwordManager.setApp( app, client );
+
     //Add House Management APIs
     var houseManager = require('./houseManager.js');
     houseManager.setApp( app, client );
