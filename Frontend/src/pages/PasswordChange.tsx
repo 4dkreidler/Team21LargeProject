@@ -15,7 +15,7 @@ const PasswordChange: React.FC = () => {
         e.preventDefault();
         setError("");
 
-        // ✅ Password match validation
+        
         if (newPassword !== confirmPassword) {
             setError("Passwords do not match.");
             return;
@@ -88,7 +88,7 @@ const PasswordChange: React.FC = () => {
                             />
                         </div>
 
-                        {/* ✅ Error message */}
+                       
                         {error && (
                             <p className="text-red-500 text-sm mb-4">{error}</p>
                         )}
@@ -101,20 +101,14 @@ const PasswordChange: React.FC = () => {
                                 Change Password
                             </button>
 
-                            {/* ✅ Cancel button */}
-                            <button
-                                type="button"
-                                onClick={() => navigate("/")}
-                                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-                            >
-                                Cancel
-                            </button>
+                            
+                        
                         </div>
                     </form>
                 </div>
             </div>
 
-            {/* ✅ Success Modal */}
+           
             {showModal && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                     <div className="bg-white rounded-lg shadow-lg p-6 w-80 text-center">
