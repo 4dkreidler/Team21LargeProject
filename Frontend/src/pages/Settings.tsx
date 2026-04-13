@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+//import axios from "axios";
 import { buildPath } from '../utils/Path';
 
 interface Member {
@@ -37,11 +37,12 @@ const Settings: React.FC = () => {
   useEffect(() => {
     const fetchAllData = async () => {
       try {
-        const houseRes = await axios.get(buildPath(`api/houses/user/${currentUserId}`));
-        
-        if (houseRes.data.households && houseRes.data.households.length > 0) {
-          const house = houseRes.data.households[0];
-          
+        const houseRes = await fetch(buildPath(`api/houses/user/${currentUserId}`));
+        const houseData = await houseRes.json();
+
+        if (houseData.households && houseData.households.length > 0) {
+          const house = houseData.households[0];
+
           // Debugging log to confirm incoming data
           console.log("DEBUG: House Data from Backend:", house); 
 
@@ -52,8 +53,9 @@ const Settings: React.FC = () => {
           setIsAdmin(house.role === "Admin"); 
 
           // Fetch all members for this specific house
-          const membersRes = await axios.get(buildPath(`api/houses/${house._id}`));
-          setMembers(membersRes.data.members);
+          const membersRes = await fetch(buildPath(`api/houses/${house._id}`));
+          const membersData = await membersRes.json();
+          setMembers(membersData.members);
           
           // Set invite code if available (using password field as per previous logic)
           if(house.password) setInviteCode(house.password);
@@ -76,8 +78,12 @@ const Settings: React.FC = () => {
 
     try {
       // Sending the PUT request to the house ID we stored in state
-      await axios.put(buildPath(`api/houses/${houseId}`), {
-        name: newHouseName
+      await fetch(buildPath(`api/houses/${houseId}`), {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: newHouseName
+        })
       });
 
       // If successful, update the UI and close the input
@@ -97,7 +103,9 @@ const Settings: React.FC = () => {
 
   const handleRemoveUser = async (userId: string, isSelf: boolean) => {
     try {
-      await axios.delete(buildPath(`api/houses/${userId}`));
+      await fetch(buildPath(`api/houses/${userId}`), {
+        method: "DELETE"
+      });
       if (isSelf) {
         localStorage.removeItem('user_data');
         navigate("/"); 
