@@ -11,7 +11,7 @@ const SuccessVerification = () => {
       <Card>
         <div className="text-center flex flex-col items-center gap-4">
           <h1 className="text-2xl font-bold text-green-600">
-            ✅ Email Verified!
+            
           </h1>
 
           <p className="text-gray-600">
