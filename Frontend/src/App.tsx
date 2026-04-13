@@ -17,16 +17,16 @@ const App: React.FC = () => {
       <Navbar /> 
       <div className="pt-20 min-h-screen bg-gray-100"> 
         <Routes>
-          <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/verification" element={<Verification />} />
-          <Route path="/verification-success" element={<SuccessVerification />} />
-          <Route path="/Verification" element={<Verificiation />} />
-          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/Settings" element={<Settings />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+	        <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="/verification" element={<Verification />} />
+          <Route path="/Verification" element={<Verificiation />} />
           <Route path="/password-change" element={<PasswordChange />} />
+ 	        <Route path="/verification-success" element={<SuccessVerification />} />
         </Routes>
       </div>
     </Router>
