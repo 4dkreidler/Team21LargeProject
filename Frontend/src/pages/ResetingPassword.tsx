@@ -1,24 +1,22 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { Button } from "../components/Button";
 
 const ResetingPassword: React.FC = () => {  
     const navigate = useNavigate(); 
+    const { token } = useParams(); 
 
-  
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
 
     const [error, setError] = useState("");
-    const [emailError, setEmailError] = useState(""); 
     const [showModal, setShowModal] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         setError("");
-        setEmailError("");
 
         
         if (newPassword !== confirmPassword) {
@@ -26,15 +24,34 @@ const ResetingPassword: React.FC = () => {
             return;
         }
 
-        try {
-            
+  
+        if (!token) {
+            setError("Invalid or missing reset token.");
+            return;
+        }
 
-            
+        try {
+            const response = await fetch(`http://localhost:5555/api/resetpassword/${token}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ newPassword })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                setError(data.error || "Something went wrong.");
+                return;
+            }
+
+            // ✅ success
             setShowModal(true);
 
         } catch (err) {
             console.log(err);
-            setError("Something went wrong.");
+            setError("Server error. Please try again.");
         }
     };
 
@@ -50,20 +67,13 @@ const ResetingPassword: React.FC = () => {
 
                 <div className="w-full max-w-md">
                     <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-                        Change Password
+                        Reset Password
                     </h2>
 
                     <form
                         onSubmit={handleSubmit}
                         className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
                     >
-                       
-
-                        
-                        {emailError && (
-                            <p className="text-red-500 text-sm mb-4">{emailError}</p>
-                        )}
-
                         {/* NEW PASSWORD */}
                         <div className="mb-4">  
                             <label className="block text-gray-700 text-sm font-bold mb-2">
@@ -79,7 +89,7 @@ const ResetingPassword: React.FC = () => {
                             />
                         </div>
 
-                       
+                        {/* CONFIRM PASSWORD */}
                         <div className="mb-4">
                             <label className="block text-gray-700 text-sm font-bold mb-2">
                                 Confirm New Password
@@ -94,26 +104,21 @@ const ResetingPassword: React.FC = () => {
                             />
                         </div>
 
-                       
+                        {/* ERROR */}
                         {error && (
                             <p className="text-red-500 text-sm mb-4">{error}</p>
                         )}
 
                         <div className="flex items-center justify-between">
-                            <Button
-                                type="submit"
-                                
-                            >
+                            <Button type="submit">
                                 Change Password
                             </Button>
                         </div>
-
-                        
                     </form>
                 </div>
             </div>
 
-         
+            {/* SUCCESS MODAL */}
             {showModal && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                     <div className="bg-white rounded-lg shadow-lg p-6 w-80 text-center">
