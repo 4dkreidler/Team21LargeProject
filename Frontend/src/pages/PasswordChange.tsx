@@ -7,8 +7,7 @@ const PasswordChange: React.FC = () => {
     const navigate = useNavigate(); 
 
     const [email, setEmail] = useState("");
-    const [newPassword, setNewPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
+    
 
     const [error, setError] = useState("");
     const [emailError, setEmailError] = useState(""); 
@@ -38,10 +37,7 @@ const PasswordChange: React.FC = () => {
             
             setShowModal(true);
 
-        } catch (err) {
-            console.log(err);
-            setError("Something went wrong.");
-        }
+        
     };
 
     return (
@@ -99,7 +95,7 @@ const PasswordChange: React.FC = () => {
                                 type="submit"
                                 
                             >
-                                Change Password
+                                Send Email
                             </Button>
                         </div>
 
