@@ -24,12 +24,9 @@ const PasswordChange: React.FC = () => {
 
         
             
-            const fakeRegisteredEmails = ["test@gmail.com", "user@email.com"];
+            
 
-            if (!fakeRegisteredEmails.includes(email)) {
-                setEmailError("Email address not registered.");
-                return;
-            }
+            
 
             
             setShowModal(true);
@@ -76,7 +73,7 @@ const PasswordChange: React.FC = () => {
                             <p className="text-red-500 text-sm mb-4">{emailError}</p>
                         )}
 
-                        {/* NEW PASSWORD */}
+                   
                         
 
                        
@@ -115,10 +112,10 @@ const PasswordChange: React.FC = () => {
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                     <div className="bg-white rounded-lg shadow-lg p-6 w-80 text-center">
                         <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                            Password Updated
+                            Email Sent
                         </h2>
                         <p className="text-gray-600 mb-6">
-                            Your password has been successfully changed.
+                            An email has been sent to {email} to reset your password.
                         </p>
                         <button
                             onClick={() => navigate("/")}
