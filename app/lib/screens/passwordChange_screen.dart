@@ -17,9 +17,7 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
   String emailError = "";
   bool showModal = false;
 
-  // ===============================
-  // SUBMIT
-  // ===============================
+  
   void handleSubmit() {
     setState(() {
       error = "";
@@ -63,9 +61,7 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
     super.dispose();
   }
 
-  // ===============================
-  // UI
-  // ===============================
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -219,9 +215,6 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
             ),
           ),
 
-          // ===============================
-          // MODAL (SUCCESS)
-          // ===============================
           if (showModal)
             Container(
               color: Colors.black54,
