@@ -9,6 +9,7 @@ import Verificiation from './pages/Verification';
 import Dashboard from './pages/Dashboard';
 import { Navbar } from './components/Navbar';
 import Settings from './pages/Settings'
+import PasswordChange from './pages/PasswordChange';
 
 const App: React.FC = () => {
   return (
@@ -25,6 +26,7 @@ const App: React.FC = () => {
           <Route path="/Verification" element={<Verificiation />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/Settings" element={<Settings />} />
+          <Route path="/password-change" element={<PasswordChange />} />
         </Routes>
       </div>
     </Router>
