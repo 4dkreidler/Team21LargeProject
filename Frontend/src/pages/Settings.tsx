@@ -5,8 +5,8 @@ import { buildPath } from '../utils/Path';
 
 interface Member {
   _id: string;
-  FirstName: string;
-  LastName: string;
+  firstName: string;
+  lastName: string;
   role: "Admin" | "Member";
 }
 
@@ -195,9 +195,9 @@ const Settings: React.FC = () => {
               {members.map((m) => (
                 <div key={m._id} className="flex justify-between items-center bg-gray-50 px-5 py-4 rounded-xl border border-transparent hover:border-gray-200 transition-all">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center font-bold text-gray-500">{m.FirstName?.[0]}</div>
+                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center font-bold text-gray-500">{m.firstName?.[0]}</div>
                     <div>
-                      <p className="font-bold text-gray-900">{m.FirstName} {m._id === currentUserId && "(You)"}</p>
+                      <p className="font-bold text-gray-900">{m.firstName} {m._id === currentUserId && "(You)"}</p>
                       <p className="text-[10px] font-bold text-blue-600 uppercase">{m.role}</p>
                     </div>
                   </div>
@@ -245,7 +245,7 @@ const Settings: React.FC = () => {
       {memberToRemove && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white p-8 rounded-3xl max-w-sm w-full text-center shadow-2xl">
-            <h2 className="text-xl font-bold mb-2">Remove {memberToRemove.FirstName}?</h2>
+            <h2 className="text-xl font-bold mb-2">Remove {memberToRemove.firstName}?</h2>
             <p className="text-gray-500 text-xs mb-8">They will need a new code to rejoin.</p>
             <div className="space-y-3">
               <button onClick={() => handleRemoveUser(memberToRemove._id, false)} className="w-full py-4 bg-red-500 text-white rounded-full font-bold">Remove Resident</button>
