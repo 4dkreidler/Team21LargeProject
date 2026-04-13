@@ -206,6 +206,7 @@ exports.setApp = function (app, client)
                     _id: house._id.toString(),
                     name: house.HouseName,
                     password: house.password,
+
                     role: house.Admin.toString() === user._id.toString() ? "Admin" : "Member"
                 }]
             });
@@ -274,5 +275,34 @@ exports.setApp = function (app, client)
             console.error(err);
             res.status(500).json({ error: "Server error." });
         }
+});
+
+        // =========================
+    // UPDATE HOUSE NAME
+    // =========================
+    app.post('/api/houses/update', async (req, res) => {
+        try {
+            const { houseID, newName } = req.body;
+            const db = client.db('pantry');
+
+            if (!houseID || !newName) {
+                return res.status(400).json({ error: "Missing houseID or newName." });
+            }
+
+            const result = await db.collection('houses').updateOne(
+                { _id: new ObjectId(houseID) },
+                { $set: { HouseName: newName } }
+            );
+
+            if (result.matchedCount === 0) {
+                return res.status(404).json({ error: "House not found." });
+            }
+
+            res.status(200).json({ message: "House name updated successfully!", error: "" });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ error: "Server error." });
+        }
+    
     });
 }
