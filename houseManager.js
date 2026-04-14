@@ -26,7 +26,7 @@ exports.setApp = function (app, client)
             if (!user)
                 return res.status(404).json({ error: "User not found." });
 
-            if (user.houseID)
+            if (user.houseID && user.houseID !== "-1")
                 return res.status(400).json({ error: "User already in a house." });
 
             // Generate 6-char code
@@ -190,7 +190,7 @@ exports.setApp = function (app, client)
             // 3. Find the user
             const user = await db.collection('users').findOne({ _id: objUserID });
             
-            if (!user || !user.houseID) {
+            if (!user || !user.houseID || user.houseID === "-1") {
                 return res.status(200).json({ households: [] });
             }
 
