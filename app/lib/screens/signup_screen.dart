@@ -24,7 +24,7 @@ class _SignupScreenState extends State<SignupScreen> {
   bool isLoading = false;
 
   String buildPath(String route) {
-    // 10.0.2.2 for Android Emulator, localhost for iOS/Web
+    
     return "http://10.0.2.2:5000/$route";
   }
 
@@ -53,7 +53,7 @@ class _SignupScreenState extends State<SignupScreen> {
       if (res["error"] != null && res["error"].toString().isNotEmpty) {
         setState(() => message = res["error"]);
       } else {
-        // Success: Navigate to verification and pass the email state
+       
         if (!mounted) return;
         Navigator.pushNamed(
           context,
@@ -84,7 +84,7 @@ class _SignupScreenState extends State<SignupScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // HEADER (Styled to match React blue-900 and blue-400)
+            
             Column(
               children: [
                 const Text(
