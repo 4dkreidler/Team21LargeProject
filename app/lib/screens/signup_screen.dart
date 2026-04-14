@@ -46,7 +46,7 @@ class _SignupScreenState extends State<SignupScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 🔷 Title Section (same as React)
+            
             Column(
               children: const [
                 Text(
