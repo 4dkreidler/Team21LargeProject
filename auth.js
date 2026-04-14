@@ -31,13 +31,13 @@ exports.setApp = function ( app, client )
     var id = -1;
     var fn = '';
     var ln = '';
-    var houseID = '';
+    var houseID = results[0].houseID || '-1';
     if( results.length > 0 )
     {
         id = results[0]._id;
         fn = results[0].firstName;
         ln = results[0].lastName;
-        houseID = results[0].houseID;
+        houseID = results[0].houseID || '-1';
     }
 
     var ret = { id:id, firstName:fn, lastName:ln, houseID:houseID, error:''};
