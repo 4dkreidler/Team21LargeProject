@@ -144,9 +144,6 @@ const Dashboard: React.FC = () => {
                         <h1 className="text-3xl font-extrabold text-blue-900 tracking-tight uppercase">House Pantry</h1>
                         <p className="text-gray-500">Welcome, <span className="text-blue-600 font-bold">{firstName}</span>!</p>
                     </div>
-                    <button onClick={() => navigate("/settings")} className="p-3 bg-white border border-gray-200 rounded-2xl hover:bg-gray-50 transition-all shadow-sm">
-                        <span className="text-xl">⚙️</span>
-                    </button>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

@@ -25,7 +25,7 @@ const Home: React.FC = () => {
     const userId = storedUser.id;
 
     try {
-      const response = await fetch('http://localhost:5000/api/houses', {
+      const response = await fetch(buildPath('api/houses'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -58,7 +58,7 @@ const Home: React.FC = () => {
     const userId = storedUser.id;
 
     try {
-      const response = await fetch('http://localhost:5000/api/houses/join', {
+      const response = await fetch(buildPath('api/houses/join'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -89,7 +89,7 @@ const Home: React.FC = () => {
 
   try {
     // Matches the logic in houseManager to fetch households for a user
-    const response = await fetch(`http://localhost:5000/api/houses/user/${userId}`);
+    const response = await fetch(buildPath(`api/houses/user/${userId}`));
     const data = await response.json();
 
     if (data.households) {
