@@ -130,6 +130,7 @@ const Settings: React.FC = () => {
     <div className="min-h-screen bg-slate-50 flex justify-center p-6 font-sans">
       <div className="w-full max-w-2xl bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 p-8 md:p-12 relative h-fit">
         
+        {/* Header */}
         <header className="flex items-center gap-4 mb-10">
           <button 
             onClick={() => navigate("/dashboard")} 
@@ -138,99 +139,70 @@ const Settings: React.FC = () => {
             ←
           </button>
           <div>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight">Settings</h1>
+            <h1 className="text-3xl font-bold text-blue-900 tracking-tight">Settings</h1>
             <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Household Management</p>
           </div>
         </header>
 
-        <div className="space-y-10">
-          {/* Household Name Section */}
-          <section className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-            <div className="flex justify-between items-start">
-              <div className="flex-1">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Pantry Name</p>
-                {isEditingName ? (
-                  <input 
-                    type="text"
-                    className="text-2xl font-black text-blue-600 bg-white border-2 border-blue-500 rounded-lg px-3 py-1 outline-none w-full shadow-lg shadow-blue-100"
-                    value={newHouseName}
-                    onChange={(e) => setNewHouseName(e.target.value)}
-                    autoFocus
-                  />
-                ) : (
-                  <p className="text-2xl font-black text-slate-800">{houseName}</p>
-                )}
-              </div>
+ <div className="space-y-8">
+          {/* Household Info */}
+          <section className="border-b border-gray-50 pb-6">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Household Name</p>
+            <div className="flex justify-between items-center">
+              {isEditingName ? (
+                <input 
+                  className="text-xl font-bold text-blue-600 border-b-2 border-blue-500 outline-none bg-transparent w-full mr-4"
+                  value={newHouseName}
+                  onChange={(e) => setNewHouseName(e.target.value)}
+                  autoFocus
+                />
+              ) : (
+                <p className="text-xl font-bold text-gray-800">{houseName}</p>
+              )}
               
               {isAdmin && (
-                <div className="ml-4">
-                  {isEditingName ? (
-                    <div className="flex gap-2">
-                      <button onClick={handleUpdateName} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition-all">Save</button>
-                      <button onClick={() => setIsEditingName(false)} className="bg-slate-200 text-slate-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-300">Cancel</button>
-                    </div>
-                  ) : (
-                    <button 
-                      onClick={() => {
-                        setNewHouseName(houseName);
-                        setIsEditingName(true);
-                      }} 
-                      className="text-blue-600 text-sm font-bold hover:bg-blue-50 px-4 py-2 rounded-lg border border-blue-100 transition-all"
-                    >
-                      Edit
-                    </button>
-                  )}
-                </div>
+                <button 
+                  onClick={() => isEditingName ? handleUpdateName() : setIsEditingName(true)}
+                  className="text-blue-600 text-sm font-bold hover:underline"
+                >
+                  {isEditingName ? "Save" : "Edit"}
+                </button>
               )}
             </div>
           </section>
 
-          {/* Invite Code Section */}
-          <section className="px-2">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Invite Code</p>
+          {/* Invite Code */}
+          <section className="border-b border-gray-50 pb-6">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Invite Code</p>
             <div className="flex items-center gap-4">
-              <div className="bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-inner shadow-black/20 font-mono text-3xl font-black tracking-widest">
+              <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded-xl font-mono text-2xl font-bold border border-blue-100">
                 {inviteCode}
               </div>
-              <button 
-                onClick={copyToClipboard} 
-                className="text-xs font-black text-blue-600 hover:text-blue-800 uppercase tracking-tighter"
-              >
+              <button onClick={copyToClipboard} className="text-xs font-bold text-gray-400 hover:text-blue-600 uppercase tracking-tight">
                 Copy Code
               </button>
             </div>
-            <p className="text-slate-400 text-[11px] mt-3 font-medium">Roommates use this code to join your shared kitchen data.</p>
           </section>
 
-          {/* Members List */}
+          {/* Resident Directory */}
           <section>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 px-2">Residents</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-4">Residents</p>
             <div className="grid gap-3">
               {members.map((m) => {
-                const fName = m.firstName || (m as any).FirstName || "Unknown";
+                const fName = m.firstName || (m as any).FirstName || "User";
                 return (
-                  <div key={m._id} className="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-100 hover:shadow-md hover:shadow-slate-100 transition-all">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-black text-lg">
+                  <div key={m._id} className="flex justify-between items-center bg-gray-50 p-4 rounded-2xl border border-transparent hover:border-blue-100 transition-all">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold">
                         {fName[0]}
                       </div>
                       <div>
-                        <p className="font-black text-slate-800 leading-tight">
-                          {fName} {m._id === currentUserId && <span className="text-blue-500 ml-1">(You)</span>}
-                        </p>
-                        <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded ${m.role === 'Admin' ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-400'}`}>
-                          {m.role}
-                        </span>
+                        <p className="font-bold text-gray-800">{fName} {m._id === currentUserId && "(You)"}</p>
+                        <p className="text-[9px] font-bold text-blue-500 uppercase">{m.role}</p>
                       </div>
                     </div>
-                    
                     {isAdmin && m._id !== currentUserId && (
-                      <button 
-                        onClick={() => setMemberToRemove(m)} 
-                        className="w-8 h-8 flex items-center justify-center rounded-full text-slate-300 hover:bg-red-50 hover:text-red-500 transition-all"
-                      >
-                        ✕
-                      </button>
+                      <button onClick={() => setMemberToRemove(m)} className="text-gray-300 hover:text-red-500 font-bold p-2">✕</button>
                     )}
                   </div>
                 );
@@ -238,11 +210,11 @@ const Settings: React.FC = () => {
             </div>
           </section>
 
-          {/* Dangerous Zone */}
-          <div className="pt-6 border-t border-slate-100 flex justify-center">
+          {/* Leave Button */}
+          <div className="pt-8 flex justify-center">
             <button 
               onClick={() => setShowLeaveModal(true)} 
-              className="text-red-400 text-xs font-black uppercase tracking-widest hover:text-red-600 transition-colors"
+              className="bg-red-50 text-red-600 px-8 py-3 rounded-xl font-bold hover:bg-red-100 transition-all text-sm border border-red-100"
             >
               Leave Household
             </button>
@@ -250,29 +222,28 @@ const Settings: React.FC = () => {
         </div>
       </div>
 
-      {/* Modals */}
+      {/* --- MODALS --- */}
       {showLeaveModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
-          <div className="bg-white p-10 rounded-[2.5rem] max-w-sm w-full text-center shadow-2xl">
-            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-6">!</div>
-            <h2 className="text-2xl font-black mb-2 text-slate-900">Leave House?</h2>
-            <p className="text-slate-500 text-sm mb-10 leading-relaxed">You will lose all access to the pantry and shared shopping lists.</p>
-            <div className="space-y-3">
-              <button onClick={() => handleRemoveUser(currentUserId, true)} className="w-full py-4 bg-red-500 text-white rounded-2xl font-black hover:bg-red-600 transition-all">Yes, Leave</button>
-              <button onClick={() => setShowLeaveModal(false)} className="w-full py-4 bg-slate-100 text-slate-500 rounded-2xl font-black hover:bg-slate-200 transition-all">Go Back</button>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white p-8 rounded-3xl max-w-sm w-full text-center shadow-2xl">
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Leave House?</h2>
+            <p className="text-gray-500 text-sm mb-6">You will lose access to the shared pantry.</p>
+            <div className="flex flex-col gap-2">
+              <button onClick={() => handleRemoveUser(currentUserId, true)} className="w-full py-3 bg-red-600 text-white rounded-xl font-bold">Leave</button>
+              <button onClick={() => setShowLeaveModal(false)} className="w-full py-3 bg-gray-100 text-gray-600 rounded-xl font-bold">Cancel</button>
             </div>
           </div>
         </div>
       )}
 
       {memberToRemove && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
-          <div className="bg-white p-10 rounded-[2.5rem] max-w-sm w-full text-center shadow-2xl">
-            <h2 className="text-2xl font-black mb-2 text-slate-900">Remove Member?</h2>
-            <p className="text-slate-500 text-sm mb-10">This will revoke their access immediately.</p>
-            <div className="space-y-3">
-              <button onClick={() => handleRemoveUser(memberToRemove._id, false)} className="w-full py-4 bg-red-500 text-white rounded-2xl font-black hover:bg-red-600">Confirm Removal</button>
-              <button onClick={() => setMemberToRemove(null)} className="w-full py-4 bg-slate-100 text-slate-500 rounded-2xl font-black">Cancel</button>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white p-8 rounded-3xl max-w-sm w-full text-center shadow-2xl">
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Remove Member?</h2>
+            <p className="text-gray-500 text-sm mb-6">This will revoke their access to the house.</p>
+            <div className="flex flex-col gap-2">
+              <button onClick={() => handleRemoveUser(memberToRemove._id, false)} className="w-full py-3 bg-red-600 text-white rounded-xl font-bold">Remove</button>
+              <button onClick={() => setMemberToRemove(null)} className="w-full py-3 bg-gray-100 text-gray-600 rounded-xl font-bold">Cancel</button>
             </div>
           </div>
         </div>
