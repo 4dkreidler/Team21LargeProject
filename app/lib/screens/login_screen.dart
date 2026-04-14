@@ -1,218 +1,163 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../widgets/layout.dart';
 import '../widgets/card_container.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_input.dart';
-
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+import '../widgets/layout.dart';
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  String _message = "";
 
-  String message = "";
-  bool isLoading = false;
-
-  
-  String buildPath(String route) {
-    return "http://10.0.2.2:5000/$route";
+  // Helper to mimic your React buildPath utility
+  String buildPath(String endpoint) {
+    return "https://your-api-url.com/$endpoint";
   }
 
-  
-  Future<void> handleSubmit() async {
-    setState(() {
-      isLoading = true;
-      message = "";
-    });
+  Future<void> _handleSubmit() async {
+    setState(() => _message = "");
 
-    final obj = {
-      "email": emailController.text.trim(),
-      "password": passwordController.text
+    final Map<String, String> loginData = {
+      "email": _emailController.text,
+      "password": _passwordController.text,
     };
 
     try {
       final response = await http.post(
         Uri.parse(buildPath("api/login")),
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode(obj),
+        body: jsonEncode(loginData),
       );
 
       final res = jsonDecode(response.body);
 
-      if (res["error"] != null && res["error"].toString().isNotEmpty) {
-        setState(() => message = res["error"]);
-      } else if (res["id"] == null || res["id"] <= 0) {
-        setState(() => message = "Invalid email or password");
+      if (res['error'] != null && res['error'].isNotEmpty) {
+        setState(() => _message = res['error']);
+      } else if (res['id'] <= 0) {
+        setState(() => _message = "Invalid email or password");
       } else {
-        
-        final user = {
-          "firstName": res["firstName"],
-          "lastName": res["lastName"],
-          "id": res["id"]
-        };
-
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString("user_data", jsonEncode(user));
+        final userData = jsonEncode({
+          "firstName": res['firstName'],
+          "lastName": res['lastName'],
+          "id": res['id'],
+        });
+        await prefs.setString("user_data", userData);
 
         if (!mounted) return;
-        Navigator.pushNamedAndRemoveUntil(
-            context, "/home", (route) => false);
+        Navigator.pushReplacementNamed(context, '/home');
       }
     } catch (err) {
-      setState(() => message = "Unable to connect to server");
-    } finally {
-      if (mounted) setState(() => isLoading = false);
+      setState(() => _message = "Unable to connect to server");
     }
   }
 
-  @override
-  void dispose() {
-    emailController.dispose();
-    passwordController.dispose();
-    super.dispose();
-  }
-
-  
   @override
   Widget build(BuildContext context) {
     return Layout(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // HEADER
+          // Header Section
           Column(
-            children: const [
-              Text(
+            children: [
+              const Text(
                 "PARCEL PANTRY",
                 style: TextStyle(
-                  fontSize: 26,
+                  fontSize: 32,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blue,
+                  color: Color(0xFF0D47A1),
                 ),
               ),
-              SizedBox(height: 4),
-              Text(
-                "Household Logistics Engine",
+              const Text(
+                "HOUSEHOLD LOGISTICS ENGINE",
                 style: TextStyle(
                   fontSize: 10,
                   letterSpacing: 2,
-                  color: Colors.blueGrey,
+                  color: Colors.blueAccent,
                 ),
               ),
             ],
           ),
+          const SizedBox(height: 32),
 
-          const SizedBox(height: 30),
-
-          // CARD
           CardContainer(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 CustomInput(
                   label: "Email",
-                  controller: emailController,
+                  controller: _emailController,
                 ),
-                const SizedBox(height: 10),
-
+                const SizedBox(height: 16),
                 CustomInput(
                   label: "Password",
-                  controller: passwordController,
+                  controller: _passwordController,
                   obscureText: true,
                 ),
-                const SizedBox(height: 20),
-
-                isLoading
-                    ? const CircularProgressIndicator()
-                    : CustomButton(
-                        text: "Login",
-                        onPressed: handleSubmit,
-                      ),
-
-                // 
-                if (message.isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    message,
-                    style: const TextStyle(
-                      color: Colors.red,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-
-                const SizedBox(height: 20),
-
-                // RESET PASSWORD
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Forgot your password?",
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
-                      ),
-                      GestureDetector(
-                        onTap: () =>
-                            Navigator.pushNamed(context, "/passwordChange"),
-                        child: const Text(
-                          "Reset Password",
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.blue,
-                            fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                const SizedBox(height: 24),
+                CustomButton(
+                  text: "Login",
+                  onPressed: _handleSubmit,
                 ),
-
-                const SizedBox(height: 15),
-
-                // SIGN UP
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Don't have an account?",
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
-                      ),
-                      GestureDetector(
-                        onTap: () =>
-                            Navigator.pushNamed(context, "/signup"),
-                        child: const Text(
-                          "Sign up",
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.blue,
-                            fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      ),
-                    ],
+                
+                if (_message.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Text(
+                      _message,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.red, fontSize: 13),
+                    ),
                   ),
+                
+                const SizedBox(height: 20),
+                _buildLinkSection(
+                  "Forgot your password?",
+                  "Reset Password",
+                  () => Navigator.pushNamed(context, '/passwordChange'),
+                ),
+                const SizedBox(height: 16),
+                _buildLinkSection(
+                  "Don't have an account?",
+                  "Sign up",
+                  () => Navigator.pushNamed(context, '/signup'),
                 ),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildLinkSection(String text, String linkText, VoidCallback onTap) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(text, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+        GestureDetector(
+          onTap: onTap,
+          child: Text(
+            linkText,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1976D2),
+              decoration: TextDecoration.underline,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
