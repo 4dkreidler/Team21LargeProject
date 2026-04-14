@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
 import 'screens/signup_screen.dart';
 import 'screens/verification_screen.dart';
-import 'screens/home_screen.dart';
 import 'screens/successVerification_screen.dart';
 import 'screens/passwordChange_screen.dart';
+// New Imports
+import 'screens/dashboard_screen.dart'; 
+import 'screens/setting_screen.dart';
 
 void main() {
   runApp(const ParcelPantryApp());
@@ -19,7 +21,9 @@ class ParcelPantryApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Parcel Pantry',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        // Tip: Using colorScheme is the modern way to set themes in Flutter 3
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        useMaterial3: true,
       ),
 
       initialRoute: '/login',
@@ -28,10 +32,12 @@ class ParcelPantryApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignupScreen(),
         '/verification': (context) => const VerificationScreen(),
-        '/home': (context) => const HomeScreen(), // optional for now
         '/success-verification': (context) => const SuccessVerificationScreen(),
-        "/passwordChange": (context) => const PasswordChangeScreen(),
-
+        '/password-change': (context) => const PasswordChangeScreen(),
+        
+        // Dashboard & Settings
+        '/dashboard': (context) => const DashboardScreen(),
+        '/settings': (context) => const SettingsScreen(),
       },
     );
   }
