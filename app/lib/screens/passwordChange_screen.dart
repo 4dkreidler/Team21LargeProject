@@ -1,265 +1,193 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
+import '../widgets/layout.dart';
+import '../widgets/card_container.dart';
+import '../widgets/custom_button.dart';
+import '../widgets/custom_input.dart';
 
 class PasswordChangeScreen extends StatefulWidget {
   const PasswordChangeScreen({super.key});
 
   @override
-  State<PasswordChangeScreen> createState() =>
-      _PasswordChangeScreenState();
+  State<PasswordChangeScreen> createState() => _PasswordChangeScreenState();
 }
 
 class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
   final emailController = TextEditingController();
-  final newPasswordController = TextEditingController();
-  final confirmPasswordController = TextEditingController();
-
   String error = "";
-  String emailError = "";
-  bool showModal = false;
+  bool isLoading = false;
 
-  
-  void handleSubmit() {
+  String buildPath(String route) {
+    // Using 10.0.2.2 for Android emulator as per your previous setup
+    return "http://10.0.2.2:5555/$route";
+  }
+
+  Future<void> handleSubmit() async {
     setState(() {
+      isLoading = true;
       error = "";
-      emailError = "";
     });
 
-    final email = emailController.text.trim();
-    final newPassword = newPasswordController.text;
-    final confirmPassword = confirmPasswordController.text;
-
-    // Password match check
-    if (newPassword != confirmPassword) {
-      setState(() => error = "Passwords do not match.");
-      return;
-    }
-
     try {
-      // Fake email validation (same as React)
-      final fakeRegisteredEmails = [
-        "test@gmail.com",
-        "user@email.com"
-      ];
+      final response = await http.post(
+        Uri.parse(buildPath("api/emailpassword")),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"email": emailController.text.trim()}),
+      );
 
-      if (!fakeRegisteredEmails.contains(email)) {
-        setState(() => emailError = "Email address not registered.");
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode != 200) {
+        setState(() => error = data['error'] ?? "Something went wrong");
         return;
       }
 
-      // Success → show modal
-      setState(() => showModal = true);
-    } catch (e) {
-      setState(() => error = "Something went wrong.");
+      // Success -> Show Modal (Dialog)
+      if (!mounted) return;
+      _showSuccessModal();
+
+    } catch (err) {
+      setState(() => error = "Server error");
+    } finally {
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
-  @override
-  void dispose() {
-    emailController.dispose();
-    newPasswordController.dispose();
-    confirmPasswordController.dispose();
-    super.dispose();
-  }
-
- 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Change Password")),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+  void _showSuccessModal() {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // User must tap the button
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                // HEADER
-                Column(
-                  children: const [
-                    Text(
-                      "PARCEL PANTRY",
-                      style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      "Household Logistics Engine",
-                      style: TextStyle(
-                        fontSize: 10,
-                        letterSpacing: 2,
-                        color: Colors.blueGrey,
-                      ),
-                    ),
-                  ],
+                const Text(
+                  "Email Sent",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
-
-                const SizedBox(height: 30),
-
-                // FORM CARD
-                Card(
-                  elevation: 3,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        const Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Email Address",
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        TextField(
-                          controller: emailController,
-                          decoration: const InputDecoration(
-                            hintText: "Email Address",
-                          ),
-                        ),
-
-                        // EMAIL ERROR
-                        if (emailError.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 6),
-                            child: Text(
-                              emailError,
-                              style: const TextStyle(
-                                  color: Colors.red, fontSize: 12),
-                            ),
-                          ),
-
-                        const SizedBox(height: 15),
-
-                        const Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "New Password",
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        TextField(
-                          controller: newPasswordController,
-                          obscureText: true,
-                          decoration: const InputDecoration(
-                            hintText: "New Password",
-                          ),
-                        ),
-
-                        const SizedBox(height: 15),
-
-                        const Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Confirm New Password",
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        TextField(
-                          controller: confirmPasswordController,
-                          obscureText: true,
-                          decoration: const InputDecoration(
-                            hintText: "Confirm Password",
-                          ),
-                        ),
-
-                        // GENERAL ERROR
-                        if (error.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 10),
-                            child: Text(
-                              error,
-                              style: const TextStyle(
-                                  color: Colors.red, fontSize: 12),
-                            ),
-                          ),
-
-                        const SizedBox(height: 20),
-
-                        // SUBMIT BUTTON
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: handleSubmit,
-                            child:
-                                const Text("Change Password"),
-                          ),
-                        ),
-
-                        const SizedBox(height: 10),
-
-                        // CANCEL BUTTON
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                            ),
-                            onPressed: () {
-                              Navigator.pushNamedAndRemoveUntil(
-                                  context, "/", (route) => false);
-                            },
-                            child: const Text("Cancel"),
-                          ),
-                        ),
-                      ],
+                const SizedBox(height: 16),
+                Text(
+                  "An email has been sent to ${emailController.text} to reset your password.",
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.grey),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Close modal
+                      Navigator.of(context).pushReplacementNamed('/'); // Go to login
+                    },
+                    child: const Text("Back to Login", style: TextStyle(color: Colors.white)),
                   ),
                 ),
               ],
             ),
           ),
+        );
+      },
+    );
+  }
 
-          if (showModal)
-            Container(
-              color: Colors.black54,
-              child: Center(
-                child: Container(
-                  width: 300,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius:
-                        BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        "Password Updated",
-                        style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 10),
-                      const Text(
-                        "Your password has been successfully changed.",
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pushNamedAndRemoveUntil(
-                                context, "/", (route) => false);
-                          },
-                          child:
-                              const Text("Back to Login"),
-                        ),
-                      )
-                    ],
+  @override
+  void dispose() {
+    emailController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Layout(
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // HEADER
+            Column(
+              children: [
+                const Text(
+                  "PARCEL PANTRY",
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF0D47A1),
                   ),
                 ),
+                const Text(
+                  "HOUSEHOLD LOGISTICS ENGINE",
+                  style: TextStyle(
+                    fontSize: 10,
+                    letterSpacing: 2,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF60A5FA),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+
+            CardContainer(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text(
+                    "Change Password",
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 24),
+                  
+                  CustomInput(
+                    label: "Email Address",
+                    controller: emailController,
+                  ),
+                  
+                  if (error.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      error,
+                      style: const TextStyle(color: Colors.red, fontSize: 13),
+                    ),
+                  ],
+                  
+                  const SizedBox(height: 24),
+
+                  isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : CustomButton(
+                          text: "Send Email",
+                          onPressed: handleSubmit,
+                        ),
+                  
+                  const SizedBox(height: 16),
+
+                  // Cancel Button
+                  SizedBox(
+                    width: 100, // Matching the small button size from React
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                      ),
+                      onPressed: () => Navigator.pushReplacementNamed(context, '/'),
+                      child: const Text("Cancel", style: TextStyle(color: Colors.white)),
+                    ),
+                  ),
+                ],
               ),
-            )
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
