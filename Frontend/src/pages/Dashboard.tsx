@@ -126,14 +126,6 @@ const Dashboard: React.FC = () => {
                 {/* HEADER SECTION */}
                 <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                     <div className="flex items-center gap-4 text-center md:text-left">
-                        {/* SETTINGS BUTTON (Moved to left next to Title) */}
-                        <button 
-                            onClick={() => navigate("/settings")}
-                            className="p-2 bg-gray-50 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-200 transition-all group"
-                            title="Household Settings"
-                        >
-                            <span className="text-lg group-hover:rotate-90 transition-transform inline-block">⚙️</span>
-                        </button>
 
                         <div>
                             <h1 className="text-3xl font-extrabold text-blue-900 tracking-tight uppercase">House Pantry</h1>
@@ -149,7 +141,7 @@ const Dashboard: React.FC = () => {
                         + Add Item
                     </button>
                 </div>
-
+                
                 {/* VIEW TOGGLE */}
                 <div className="flex bg-gray-100 p-1 rounded-xl mb-6 w-fit">
                     <button onClick={() => setViewMode("all")} className={`px-6 py-2 rounded-lg font-bold transition-all ${viewMode === 'all' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'}`}>All Items</button>
