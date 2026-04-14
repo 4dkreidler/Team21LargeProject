@@ -48,6 +48,10 @@ client.connect()
     var pantryManager = require('./pantryManager.js');
     pantryManager.setApp( app, client );
 
+    //Add Notification Management APIs
+    var notificationManger = require('./notificationManager.js');
+    notificationManger.setApp( app, client );
+
     //Frontend integration
     app.use(express.static(path.join(__dirname, 'Frontend/dist')));
 
