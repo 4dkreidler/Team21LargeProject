@@ -60,7 +60,7 @@ const Login: React.FC = () => {
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <Input
               label="Email"
-              placeholder="Value"
+              placeholder="Email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -68,7 +68,7 @@ const Login: React.FC = () => {
             />
             <Input
               label="Password"
-              placeholder="Value"
+              placeholder="Password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
