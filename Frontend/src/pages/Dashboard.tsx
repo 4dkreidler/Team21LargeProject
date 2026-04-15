@@ -130,9 +130,16 @@ const Dashboard: React.FC = () => {
     };
 
     useEffect(() => {
+    //Immediately wipe the old data so it doesn't leak into the new house
+    setItems([]); 
+    setNotifications([]);
+    
+    //Only fetch if we actually have a houseID
+    if (houseID) {
         fetchPantry();
         fetchNotifications();
-    }, [search, houseID]); 
+    }
+}, [search, houseID]);
 
     const displayedItems = viewMode === "all" ? items : items.filter(item => item.Stock === 0);
 

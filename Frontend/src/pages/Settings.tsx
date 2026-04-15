@@ -114,6 +114,9 @@ const Settings: React.FC = () => {
       });
 
       if (isSelf) {
+        const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+      delete userData.houseID; // Remove the old house ID
+      localStorage.setItem('user_data', JSON.stringify(userData)); // Save the "cleared" user
         navigate("/home"); 
       } else {
         setMembers(prev => prev.filter(m => m._id !== userId));

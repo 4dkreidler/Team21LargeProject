@@ -26,7 +26,7 @@ const App: React.FC = () => {
 	        <Route path="/" element={<Navigate to="/login" />} />
           
           <Route path="/verification" element={<Verification />} />
-          <Route path="/Verification" element={<Verificiation />} />
+          <Route path="/Verification" element={<Verification />} /> 
         
           <Route path="/passwordChange" element={<PasswordChange />} />
           <Route path="/reset-password/:id" element={<ResetingPassword />} />

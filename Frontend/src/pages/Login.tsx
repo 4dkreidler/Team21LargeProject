@@ -6,10 +6,23 @@ import { Card } from "../components/Card";
 import { Layout } from "../components/Layout";
 import { buildPath } from "../utils/Path";
 
+
 const Login: React.FC = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [message, setMessage] = useState<string>("");
+
+//should fix the user alr logged in error
+React.useEffect(() => {
+  const userDataStr = localStorage.getItem("user_data");
+  if (userDataStr) {
+    const userData = JSON.parse(userDataStr);
+    // Only wipe if the data is broken (missing an ID)
+    if (!userData.id) {
+      localStorage.removeItem("user_data");
+    }
+  }
+}, []);
 
   const navigate = useNavigate(); 
 
@@ -32,7 +45,7 @@ const Login: React.FC = () => {
 
       if (res.error && res.error.length > 0) {
         setMessage(res.error);
-      } else if (res.id <= 0) {
+      } else if (!res.id) {
         setMessage("Invalid email or password");
       } else {
         const user = { firstName: res.firstName, lastName: res.lastName, id: res.id };

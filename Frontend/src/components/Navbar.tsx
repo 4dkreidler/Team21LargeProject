@@ -1,10 +1,12 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+
 
 export const Navbar: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const userDataStr = localStorage.getItem("user_data");
-  const isLoggedIn = !!userDataStr;
+  const isLoggedIn = !!userDataStr && location.pathname !== "/" && location.pathname !== "/signup";
   const userData = isLoggedIn ? JSON.parse(userDataStr || '{}') : null;
   
   // Get the first initial 

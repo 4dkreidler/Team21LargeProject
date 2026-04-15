@@ -39,6 +39,9 @@ const Home: React.FC = () => {
       if (data.error) {
         alert(data.error);
       } else {
+        //assuring when we join new household while logged in, we can add pantry items
+        const userUpdate = { ...storedUser, houseID: data.user.houseID};
+        localStorage.setItem('user_data', JSON.stringify(userUpdate));
         const newHouseEntry = {
           _id: data.user.houseID,
           name: houseName,
