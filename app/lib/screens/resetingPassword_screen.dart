@@ -7,49 +7,62 @@ import '../widgets/card_container.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_input.dart';
 
-class PasswordChangeScreen extends StatefulWidget {
-  const PasswordChangeScreen({super.key});
+class ResetPasswordScreen extends StatefulWidget {
+  const ResetPasswordScreen({super.key});
 
   @override
-  State<PasswordChangeScreen> createState() => _PasswordChangeScreenState();
+  State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
 }
 
-class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
-  final emailController = TextEditingController();
+class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
+  final passwordController = TextEditingController();
+  final confirmController = TextEditingController();
+  
   String error = "";
   bool isLoading = false;
 
   String buildPath(String route) {
-    // Using 10.0.2.2 for Android emulator as per your previous setup
     return "http://10.0.2.2:5555/$route";
   }
 
-  Future<void> handleSubmit() async {
+  Future<void> handleSubmit(String? id) async {
     setState(() {
-      isLoading = true;
       error = "";
     });
 
+    // Validation logic matching React
+    if (passwordController.text != confirmController.text) {
+      setState(() => error = "Passwords do not match.");
+      return;
+    }
+
+    if (id == null || id.isEmpty) {
+      setState(() => error = "Invalid or missing reset token.");
+      return;
+    }
+
+    setState(() => isLoading = true);
+
     try {
       final response = await http.post(
-        Uri.parse(buildPath("api/emailpassword")),
+        Uri.parse(buildPath("api/resetpassword/$id")),
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"email": emailController.text.trim()}),
+        body: jsonEncode({"newPassword": passwordController.text}),
       );
 
       final data = jsonDecode(response.body);
 
       if (response.statusCode != 200) {
-        setState(() => error = data['error'] ?? "Something went wrong");
+        setState(() => error = data['error'] ?? "Something went wrong.");
         return;
       }
 
-      // Success -> Show Modal (Dialog)
+      // Success -> Show Success Dialog
       if (!mounted) return;
       _showSuccessModal();
 
     } catch (err) {
-      setState(() => error = "Server error");
+      setState(() => error = "Server error. Please try again.");
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
@@ -58,7 +71,7 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
   void _showSuccessModal() {
     showDialog(
       context: context,
-      barrierDismissible: false, // User must tap the button
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return Dialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -68,14 +81,14 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
-                  "Email Sent",
+                  "Password Updated",
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
-                Text(
-                  "An email has been sent to ${emailController.text} to reset your password.",
+                const Text(
+                  "Your password has been successfully changed.",
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.grey),
+                  style: TextStyle(color: Colors.grey),
                 ),
                 const SizedBox(height: 24),
                 SizedBox(
@@ -86,8 +99,8 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
                     onPressed: () {
-                      Navigator.of(context).pop(); // Close modal
-                      Navigator.of(context).pushReplacementNamed('/'); // Go to login
+                      Navigator.of(context).pop();
+                      Navigator.of(context).pushReplacementNamed('/');
                     },
                     child: const Text("Back to Login", style: TextStyle(color: Colors.white)),
                   ),
@@ -102,18 +115,23 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
 
   @override
   void dispose() {
-    emailController.dispose();
+    passwordController.dispose();
+    confirmController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    // Extract ID from arguments passed during navigation
+    final Map? args = ModalRoute.of(context)?.settings.arguments as Map?;
+    final String? id = args?['id'];
+
     return Layout(
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // HEADER
+            // BRANDING
             Column(
               children: [
                 const Text(
@@ -142,14 +160,22 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Text(
-                    "Change Password",
+                    "Reset Password",
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 24),
                   
                   CustomInput(
-                    label: "Email Address",
-                    controller: emailController,
+                    label: "New Password",
+                    controller: passwordController,
+                    obscureText: true,
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  CustomInput(
+                    label: "Confirm New Password",
+                    controller: confirmController,
+                    obscureText: true,
                   ),
                   
                   if (error.isNotEmpty) ...[
@@ -165,24 +191,9 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
                   isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : CustomButton(
-                          text: "Send Email",
-                          onPressed: handleSubmit,
+                          text: "Change Password",
+                          onPressed: () => handleSubmit(id),
                         ),
-                  
-                  const SizedBox(height: 16),
-
-                  // Cancel Button
-                  SizedBox(
-                    width: 100, // Matching the small button size from React
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                      ),
-                      onPressed: () => Navigator.pushReplacementNamed(context, '/'),
-                      child: const Text("Cancel", style: TextStyle(color: Colors.white)),
-                    ),
-                  ),
                 ],
               ),
             ),
