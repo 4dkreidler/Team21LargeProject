@@ -2,274 +2,296 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../widgets/layout.dart';
+import '../widgets/card_container.dart';
+import '../widgets/custom_button.dart';
+import '../widgets/custom_input.dart';
 
-class PantryItem {
-  final String id;
-  final String foodName;
-  int stock;
-  final String category;
-
-  PantryItem({required this.id, required this.foodName, required this.stock, required this.category});
-
-  factory PantryItem.fromJson(Map<String, dynamic> json) {
-    return PantryItem(
-      id: json['_id'],
-      foodName: json['foodName'],
-      stock: json['Stock'] ?? 0,
-      category: json['Category'] ?? "General",
-    );
-  }
-}
-
-class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
-  List<PantryItem> items = [];
-  String search = "";
-  String viewMode = "all"; // "all" or "shopping"
+class _HomeScreenState extends State<HomeScreen> {
+  List households = [];
   bool isLoading = true;
 
-  @override
-  void initState() {
-    super.initState();
-    _checkAuth();
-    fetchPantry();
+  bool showJoinInput = false;
+  bool showSuccessModal = false;
+
+  String inviteCode = "";
+  String generatedCode = "";
+
+  final inviteController = TextEditingController();
+
+  String buildPath(String route) {
+    return "http://localhost:5555/$route";
   }
 
-  Future<void> _checkAuth() async {
+  // ================= CREATE HOUSE =================
+  Future<void> handleCreateHouse() async {
+    String? houseName = await _showInputDialog("Enter Household Name");
+
+    if (houseName == null || houseName.isEmpty) return;
+
     final prefs = await SharedPreferences.getInstance();
-    if (prefs.getString('user_data') == null) {
-      if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/');
-    }
-  }
-
-  String buildPath(String route) => "http://10.0.2.2:5000/$route";
-
-  Future<void> fetchPantry() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userData = jsonDecode(prefs.getString('user_data') ?? '{}');
-    final houseID = userData['houseID'];
-
-    if (houseID == null) return;
+    final storedUser = jsonDecode(prefs.getString("user_data") ?? "{}");
+    final userId = storedUser["id"];
 
     try {
-      final response = await http.get(Uri.parse(buildPath("pantry/$houseID?search=$search")));
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() {
-          items = (data['items'] as List).map((i) => PantryItem.fromJson(i)).toList();
-          isLoading = false;
-        });
-      }
-    } catch (e) {
-      debugPrint("Fetch error: $e");
-    }
-  }
-
-  Future<void> updateStock(String itemID, int newStock) async {
-    final prefs = await SharedPreferences.getInstance();
-    final userData = jsonDecode(prefs.getString('user_data') ?? '{}');
-
-    try {
-      final response = await http.put(
-        Uri.parse(buildPath("pantry/$itemID")),
+      final response = await http.post(
+        Uri.parse(buildPath("api/houses")),
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"Stock": newStock, "userID": userData['id']}),
+        body: jsonEncode({
+          "Admin": userId,
+          "HouseName": houseName,
+        }),
       );
 
-      if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      if (data["error"] != null) {
+        _showMessage(data["error"]);
+      } else {
         setState(() {
-          items.firstWhere((item) => item.id == itemID).stock = newStock;
+          households = [
+            {
+              "_id": data["user"]["houseID"],
+              "name": houseName,
+              "role": "Admin"
+            }
+          ];
+          generatedCode = data["house"]["password"];
+          showSuccessModal = true;
         });
       }
-    } catch (e) {
-      debugPrint("Update error: $e");
+    } catch (err) {
+      debugPrint("Create error: $err");
     }
   }
 
-  Future<void> handleDeleteItem(PantryItem item) async {
-    final confirm = await showDialog<bool>(
+  // ================= JOIN HOUSE =================
+  Future<void> handleJoinHouse() async {
+    final prefs = await SharedPreferences.getInstance();
+    final storedUser = jsonDecode(prefs.getString("user_data") ?? "{}");
+
+    try {
+      final response = await http.post(
+        Uri.parse(buildPath("api/houses/join")),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "userID": storedUser["id"],
+          "password": inviteController.text.trim(),
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (data["error"] != null) {
+        _showMessage(data["error"]);
+      } else {
+        final updatedUser = {
+          ...storedUser,
+          "houseID": data["user"]["houseID"]
+        };
+
+        await prefs.setString("user_data", jsonEncode(updatedUser));
+
+        if (!mounted) return;
+        Navigator.pushNamedAndRemoveUntil(context, "/dashboard", (_) => false);
+      }
+    } catch (err) {
+      debugPrint("Join error: $err");
+    }
+  }
+
+  // ================= FETCH HOUSES =================
+  Future<void> fetchHouses() async {
+    final prefs = await SharedPreferences.getInstance();
+    final storedUser = jsonDecode(prefs.getString("user_data") ?? "{}");
+
+    final userId = storedUser["id"];
+    final houseID = storedUser["houseID"];
+
+    if (userId == null || houseID == "-1") {
+      setState(() => isLoading = false);
+      return;
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse(buildPath("api/houses/user/$userId")),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (data["households"] != null) {
+        setState(() {
+          households = data["households"];
+        });
+      }
+    } catch (err) {
+      debugPrint("Fetch error: $err");
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+  // ================= SELECT HOUSE =================
+  Future<void> handleSelectHouse(String houseID) async {
+    final prefs = await SharedPreferences.getInstance();
+    final storedUser = jsonDecode(prefs.getString("user_data") ?? "{}");
+
+    final updatedUser = {
+      ...storedUser,
+      "houseID": houseID
+    };
+
+    await prefs.setString("user_data", jsonEncode(updatedUser));
+
+    if (!mounted) return;
+    Navigator.pushNamed(context, "/dashboard");
+  }
+
+  // ================= UI HELPERS =================
+  Future<String?> _showInputDialog(String title) async {
+    TextEditingController controller = TextEditingController();
+
+    return showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Delete Item"),
-        content: Text("Are you sure you want to remove ${item.foodName}?"),
+      builder: (_) => AlertDialog(
+        title: Text(title),
+        content: TextField(controller: controller),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Delete", style: TextStyle(color: Colors.red))),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(context, controller.text),
+            child: const Text("OK"),
+          ),
         ],
       ),
     );
+  }
 
-    if (confirm == true) {
-      await http.delete(Uri.parse(buildPath("pantry/${item.id}")));
-      fetchPantry();
-    }
+  void _showMessage(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  void finishCreate() {
+    Navigator.pushNamedAndRemoveUntil(context, "/dashboard", (_) => false);
+  }
+
+  // ================= INIT =================
+  @override
+  void initState() {
+    super.initState();
+    fetchHouses();
   }
 
   @override
   Widget build(BuildContext context) {
-    final displayedItems = viewMode == "all" 
-        ? items 
-        : items.where((i) => i.stock == 0).toList();
-
     return Layout(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
+      child: SingleChildScrollView(
         child: Column(
           children: [
-            // HEADER
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.settings_outlined),
-                      onPressed: () => Navigator.pushNamed(context, '/settings'),
-                    ),
-                    const Text("HOUSE PANTRY", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF0D47A1))),
-                  ],
-                ),
-                ElevatedButton(
-                  onPressed: _showAddModal,
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white),
-                  child: const Text("+ Add Item"),
-                ),
-              ],
+            const Text(
+              "Your Households",
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF0D47A1)),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 8),
+            const Text("Select a household to manage your pantry", style: TextStyle(color: Colors.grey)),
 
-            // TOGGLE VIEW
-            Container(
-              decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(12)),
-              child: Row(
+            const SizedBox(height: 24),
+
+            // ACTIONS
+            CardContainer(
+              child: Column(
                 children: [
-                  _toggleBtn("All Items", "all"),
-                  _toggleBtn("Shopping List (${items.where((i) => i.stock == 0).length})", "shopping"),
+                  CustomButton(
+                    text: "Create New Household",
+                    onPressed: handleCreateHouse,
+                  ),
+                  const SizedBox(height: 12),
+
+                  if (!showJoinInput)
+                    CustomButton(
+                      text: "Join Household",
+                      onPressed: () {
+                        setState(() => showJoinInput = true);
+                      },
+                    )
+                  else ...[
+                    CustomInput(label: "Invite Code", controller: inviteController),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(child: CustomButton(text: "Join", onPressed: handleJoinHouse)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: CustomButton(
+                            text: "Cancel",
+                            onPressed: () => setState(() => showJoinInput = false),
+                          ),
+                        ),
+                      ],
+                    )
+                  ]
                 ],
               ),
             ),
-            const SizedBox(height: 20),
 
-            // SEARCH
-            TextField(
-              onChanged: (val) {
-                setState(() => search = val);
-                fetchPantry();
-              },
-              decoration: InputDecoration(
-                hintText: "Search pantry...",
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-              ),
-            ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
             // LIST
-            Expanded(
-              child: isLoading 
-                ? const Center(child: CircularProgressIndicator())
-                : ListView.separated(
-                    itemCount: displayedItems.length,
-                    separatorBuilder: (_, __) => const Divider(),
-                    itemBuilder: (context, index) {
-                      final item = displayedItems[index];
-                      return _buildPantryTile(item);
-                    },
-                  ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _toggleBtn(String text, String mode) {
-    bool isSelected = viewMode == mode;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => setState(() => viewMode = mode),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            color: isSelected ? Colors.white : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: isSelected ? [BoxShadow(color: Colors.black12, blurRadius: 4)] : [],
-          ),
-          child: Text(text, textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, color: isSelected ? Colors.blue : Colors.grey)),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPantryTile(PantryItem item) {
-    Color badgeColor;
-    String badgeText = "QTY: ${item.stock}";
-
-    if (item.stock >= 5) {
-      badgeColor = Colors.green;
-    } else if (item.stock >= 1) {
-      badgeColor = Colors.orange;
-    } else {
-      badgeColor = Colors.red;
-      badgeText = "OUT";
-    }
-
-    return ListTile(
-      title: Text(item.foodName.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold)),
-      subtitle: Text(item.category.toUpperCase(), style: const TextStyle(fontSize: 10, letterSpacing: 1)),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: badgeColor.withOpacity(0.1),
-              border: Border.all(color: badgeColor),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(badgeText, style: TextStyle(color: badgeColor, fontSize: 10, fontWeight: FontWeight.bold)),
-          ),
-          IconButton(icon: const Icon(Icons.edit, size: 20), onPressed: () => _showEditModal(item)),
-          IconButton(icon: const Icon(Icons.delete_outline, size: 20), onPressed: () => handleDeleteItem(item)),
-        ],
-      ),
-    );
-  }
-
-  // Modals for Add/Edit would go here using showModalBottomSheet or showDialog
-  void _showAddModal() { /* Implementation similar to your React Add Modal */ }
-  
-  void _showEditModal(PantryItem item) {
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) => AlertDialog(
-          title: Text("Edit ${item.foodName}"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+            CardContainer(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  IconButton(onPressed: () => setModalState(() => item.stock--), icon: const Icon(Icons.remove)),
-                  Text("${item.stock}", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                  IconButton(onPressed: () => setModalState(() => item.stock++), icon: const Icon(Icons.add)),
+                  const Text("Joined Households", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+
+                  const SizedBox(height: 12),
+
+                  if (isLoading)
+                    const Text("Loading...")
+                  else if (households.isEmpty)
+                    const Text("No households yet")
+                  else
+                    Column(
+                      children: households.map<Widget>((house) {
+                        return ListTile(
+                          title: Text(house["name"]),
+                          subtitle: Text(house["role"]),
+                          trailing: const Icon(Icons.arrow_forward),
+                          onTap: () => handleSelectHouse(house["_id"]),
+                        );
+                      }).toList(),
+                    )
                 ],
               ),
-              TextButton(onPressed: () => setModalState(() => item.stock = 0), child: const Text("Mark as Out of Stock", style: TextStyle(color: Colors.red))),
-            ],
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
-            ElevatedButton(onPressed: () { updateStock(item.id, item.stock); Navigator.pop(context); }, child: const Text("Save")),
+            ),
+
+            // SUCCESS MODAL
+            if (showSuccessModal)
+              AlertDialog(
+                title: const Text("Household Created!"),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text("Share this code:"),
+                    const SizedBox(height: 10),
+                    Text(
+                      generatedCode,
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                actions: [
+                  TextButton(onPressed: finishCreate, child: const Text("Go to Dashboard"))
+                ],
+              )
           ],
         ),
       ),
