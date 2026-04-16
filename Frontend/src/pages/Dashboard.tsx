@@ -40,6 +40,18 @@ const Dashboard: React.FC = () => {
     const firstName = userData.firstName || "User";
     const userID = userData.id;
 
+    const formatTimestamp = (dateString: string | number) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return 'Just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+};
+
     const getInitial = (name: string) => (name ? name.charAt(0).toUpperCase() : "?");
     const getAvatarColor = (name: string) => {
         const colors = ['bg-blue-500', 'bg-purple-500', 'bg-emerald-500', 'bg-orange-500', 'bg-pink-500'];
@@ -206,12 +218,18 @@ const Dashboard: React.FC = () => {
 
                             <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
                                 {notifications.map((note) => (
-                                    <div key={note._id} className="flex gap-3 items-start">
+                                    <div key={note._id} className="flex gap-3 items-start group">
                                         <div className={`w-8 h-8 rounded-full ${getAvatarColor(note.userName)} text-white flex items-center justify-center font-bold text-xs shrink-0`}>
                                             {getInitial(note.userName)}
                                         </div>
-                                        <div className="bg-gray-50 p-3 rounded-2xl rounded-tl-none border text-sm text-gray-700">
-                                            <span className="font-bold text-blue-900">{note.userName}</span> {note.message}
+                                        <div className="flex flex-col gap-1 w-full">
+                                            <div className="bg-gray-50 p-3 rounded-2xl rounded-tl-none border text-sm text-gray-700">
+                                                <span className="font-bold text-blue-900">{note.userName}</span> {note.message}
+                                            </div>
+                                            {/* --- TIMESTAMP ADDED HERE --- */}
+                                            <span className="text-[10px] text-gray-400 font-bold uppercase pl-1 tracking-wider">
+                                                {formatTimestamp(note.createdAt)}
+                                            </span>
                                         </div>
                                     </div>
                                 ))}
