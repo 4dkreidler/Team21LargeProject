@@ -22,9 +22,8 @@ class _LoginScreenState extends State<LoginScreen> {
   String message = "";
   bool isLoading = false;
 
-  // Use localhost for Chrome/Web. 
-  // Change to 10.0.2.2 if testing on Android Emulator.
   String buildPath(String route) {
+    // For local dev on Chrome
     return "http://localhost:5555/$route";
   }
 
@@ -52,23 +51,19 @@ class _LoginScreenState extends State<LoginScreen> {
         }),
       );
 
-      // The server returned a response, let's parse it safely
       final res = jsonDecode(response.body);
 
-      // 1. Check for explicit error messages from your API
       if (res["error"] != null && res["error"].toString().isNotEmpty) {
         setState(() => message = res["error"]);
         return;
       }
 
-      // 2. Safe check for the ID. We convert to String to avoid 
-      // TypeError: type 'String' is not a subtype of type 'int'
+      // MongoDB ID safe check
       String userId = res["id"]?.toString() ?? "";
 
       if (userId == "" || userId == "-1") {
         setState(() => message = "Invalid email or password");
       } else {
-        // SUCCESS: Save user data
         final user = {
           "firstName": res["firstName"] ?? "",
           "lastName": res["lastName"] ?? "",
@@ -79,12 +74,13 @@ class _LoginScreenState extends State<LoginScreen> {
         await prefs.setString("user_data", jsonEncode(user));
 
         if (!mounted) return;
+        
+        // Navigation: Matches the '/home' route in main.dart
         Navigator.pushNamedAndRemoveUntil(context, "/home", (_) => false);
       }
     } catch (err) {
-      // Print the actual error to your terminal for debugging
-      debugPrint("Login Error: $err");
-      setState(() => message = "Connection error. Is the server running?");
+      debugPrint("Login error: $err");
+      setState(() => message = "Unable to connect to server");
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
@@ -97,68 +93,35 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // ... (Keep your existing @override Widget build and _buildFooterLink as is)
   @override
   Widget build(BuildContext context) {
     return Layout(
       child: SingleChildScrollView(
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            Column(
-              children: const [
-                Text(
-                  "PARCEL PANTRY",
-                  style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF0D47A1),
-                  ),
-                ),
-                Text(
-                  "HOUSEHOLD LOGISTICS ENGINE",
-                  style: TextStyle(
-                    fontSize: 10,
-                    letterSpacing: 2.5,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF60A5FA),
-                  ),
-                ),
-              ],
+            const Text(
+              "PARCEL PANTRY",
+              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Color(0xFF0D47A1)),
+            ),
+            const Text(
+              "HOUSEHOLD LOGISTICS ENGINE",
+              style: TextStyle(fontSize: 10, letterSpacing: 2.5, fontWeight: FontWeight.w600, color: Color(0xFF60A5FA)),
             ),
             const SizedBox(height: 32),
             CardContainer(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  CustomInput(
-                    label: "Email",
-                    controller: emailController,
-                  ),
+                  CustomInput(label: "Email", controller: emailController),
                   const SizedBox(height: 16),
-                  CustomInput(
-                    label: "Password",
-                    controller: passwordController,
-                    obscureText: true,
-                  ),
+                  CustomInput(label: "Password", controller: passwordController, obscureText: true),
                   const SizedBox(height: 24),
                   isLoading
                       ? const Center(child: CircularProgressIndicator())
-                      : CustomButton(
-                          text: "Login",
-                          onPressed: handleSubmit,
-                        ),
+                      : CustomButton(text: "Login", onPressed: handleSubmit),
                   if (message.isNotEmpty) ...[
                     const SizedBox(height: 12),
-                    Text(
-                      message,
-                      style: const TextStyle(
-                        color: Colors.red,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+                    Text(message, style: const TextStyle(color: Colors.red, fontSize: 13), textAlign: TextAlign.center),
                   ],
                   const SizedBox(height: 24),
                   _buildFooterLink("Forgot your password?", "Reset Password", "/passwordChange"),
@@ -182,12 +145,7 @@ class _LoginScreenState extends State<LoginScreen> {
           onTap: () => Navigator.pushNamed(context, route),
           child: Text(
             action,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF2563EB),
-              decoration: TextDecoration.underline,
-            ),
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2563EB), decoration: TextDecoration.underline),
           ),
         ),
       ],
