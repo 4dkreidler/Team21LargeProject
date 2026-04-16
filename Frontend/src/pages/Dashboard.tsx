@@ -47,6 +47,16 @@ const Dashboard: React.FC = () => {
         return colors[index];
     };
 
+    const formatTime = (timestamp: any) => {
+        if (!timestamp) return "";
+        const date = new Date(timestamp);
+        const isToday = new Date().toDateString() === date.toDateString();
+
+        return isToday
+            ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            : date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    };
+
     const fetchNotifications = async () => {
         if (!houseID) return;
         try {
@@ -54,10 +64,10 @@ const Dashboard: React.FC = () => {
             if (response.ok) {
                 const data = await response.json();
                 const list = Array.isArray(data) ? data : (data.notifications || []);
-                const sorted = list.sort((a: any, b: any) => 
+                const sorted = list.sort((a: any, b: any) =>
                     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
                 );
-                setNotifications(sorted.slice(0, 10)); 
+                setNotifications(sorted.slice(0, 10));
             }
         } catch (e) { console.error(e); }
     };
@@ -70,13 +80,13 @@ const Dashboard: React.FC = () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ houseID, userName: firstName, message })
             });
-            fetchNotifications(); 
+            fetchNotifications();
         } catch (e) { console.error(e); }
     };
 
     const fetchPantry = async () => {
         if (!houseID) return;
-        const url = buildPath(`pantry/${houseID}?search=${search}`);
+        const url = buildPath(`api/pantry/${houseID}?search=${search}`);
         try {
             const response = await fetch(url);
             if (response.ok) {
@@ -89,7 +99,7 @@ const Dashboard: React.FC = () => {
     const handleAddItem = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await fetch(buildPath(`pantry`), {
+            const response = await fetch(buildPath(`api/pantry`), {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ ...newItem, houseID, userID })
@@ -105,7 +115,7 @@ const Dashboard: React.FC = () => {
 
     const updateStock = async (itemID: string, newStock: number, itemName: string) => {
         try {
-            const response = await fetch(buildPath(`pantry/${itemID}`), {
+            const response = await fetch(buildPath(`api/pantry/${itemID}`), {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ Stock: newStock, userID: userID })
@@ -121,7 +131,7 @@ const Dashboard: React.FC = () => {
     const handleDeleteItem = async (itemID: string, foodName: string) => {
         if (!window.confirm(`Remove ${foodName}?`)) return;
         try {
-            const response = await fetch(buildPath(`pantry/${itemID}`), { method: "DELETE" });
+            const response = await fetch(buildPath(`api/pantry/${itemID}`), { method: "DELETE" });
             if (response.ok) {
                 sendActivity(`deleted ${foodName}`);
                 setItems(prev => prev.filter(item => item._id !== itemID));
@@ -130,16 +140,14 @@ const Dashboard: React.FC = () => {
     };
 
     useEffect(() => {
-    //Immediately wipe the old data so it doesn't leak into the new house
-    setItems([]); 
-    setNotifications([]);
-    
-    //Only fetch if we actually have a houseID
-    if (houseID) {
-        fetchPantry();
-        fetchNotifications();
-    }
-}, [search, houseID]);
+        setItems([]);
+        setNotifications([]);
+
+        if (houseID) {
+            fetchPantry();
+            fetchNotifications();
+        }
+    }, [search, houseID]);
 
     const displayedItems = viewMode === "all" ? items : items.filter(item => item.Stock === 0);
 
@@ -217,8 +225,13 @@ const Dashboard: React.FC = () => {
                                         <div className={`w-8 h-8 rounded-full ${getAvatarColor(note.userName)} text-white flex items-center justify-center font-bold text-xs shrink-0`}>
                                             {getInitial(note.userName)}
                                         </div>
-                                        <div className="bg-gray-50 p-3 rounded-2xl rounded-tl-none border text-sm text-gray-700">
-                                            <span className="font-bold text-blue-900">{note.userName}</span> {note.message}
+                                        <div className="flex flex-col items-start">
+                                            <div className="bg-gray-50 p-3 rounded-2xl rounded-tl-none border text-sm text-gray-700">
+                                                <span className="font-bold text-blue-900">{note.userName}</span> {note.message}
+                                            </div>
+                                            <span className="text-[10px] text-gray-400 mt-1 ml-1 font-bold uppercase tracking-wider">
+                                                {formatTime(note.createdAt)}
+                                            </span>
                                         </div>
                                     </div>
                                 ))}
@@ -228,16 +241,15 @@ const Dashboard: React.FC = () => {
                 </div>
             </div>
 
-            {/* ADD MODAL */}
             {showModal && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl">
                         <h2 className="text-2xl font-bold text-blue-900 mb-6">Add New Item</h2>
                         <form onSubmit={handleAddItem} className="flex flex-col gap-4">
-                            <input required className="w-full p-3 bg-gray-50 border rounded-xl" placeholder="Item Name" value={newItem.foodName} onChange={(e) => setNewItem({...newItem, foodName: e.target.value})} />
+                            <input required className="w-full p-3 bg-gray-50 border rounded-xl" placeholder="Item Name" value={newItem.foodName} onChange={(e) => setNewItem({ ...newItem, foodName: e.target.value })} />
                             <div className="flex gap-4">
-                                <input type="number" min="0" className="w-full p-3 bg-gray-50 border rounded-xl" value={newItem.Stock} onChange={(e) => setNewItem({...newItem, Stock: parseInt(e.target.value) || 0})} />
-                                <select className="w-full p-3 bg-gray-50 border rounded-xl" value={newItem.Category} onChange={(e) => setNewItem({...newItem, Category: e.target.value})}>
+                                <input type="number" min="0" className="w-full p-3 bg-gray-50 border rounded-xl" value={newItem.Stock} onChange={(e) => setNewItem({ ...newItem, Stock: parseInt(e.target.value) || 0 })} />
+                                <select className="w-full p-3 bg-gray-50 border rounded-xl" value={newItem.Category} onChange={(e) => setNewItem({ ...newItem, Category: e.target.value })}>
                                     <option>General</option><option>Dairy</option><option>Produce</option><option>Meat</option>
                                 </select>
                             </div>
@@ -250,20 +262,19 @@ const Dashboard: React.FC = () => {
                 </div>
             )}
 
-            {/* EDIT MODAL - FULLY RESTORED */}
             {showEditModal && editingItem && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl">
                         <h2 className="text-2xl font-bold text-blue-900 mb-6 tracking-tight">Edit Item</h2>
                         <div className="flex flex-col gap-5">
-                            <input className="w-full p-3 bg-gray-50 border rounded-xl outline-none focus:ring-2 ring-blue-500" value={editingItem.foodName} onChange={(e) => setEditingItem({...editingItem, foodName: e.target.value})} />
-                            
+                            <input className="w-full p-3 bg-gray-50 border rounded-xl outline-none focus:ring-2 ring-blue-500" value={editingItem.foodName} onChange={(e) => setEditingItem({ ...editingItem, foodName: e.target.value })} />
+
                             <div className="flex items-center justify-between bg-gray-50 p-4 rounded-2xl">
                                 <span className="font-bold text-gray-600">Quantity</span>
                                 <div className="flex items-center gap-4">
-                                    <button onClick={() => setEditingItem({...editingItem, Stock: Math.max(0, editingItem.Stock - 1)})} className="w-10 h-10 bg-white rounded-full shadow-sm font-bold border hover:bg-gray-50">-</button>
+                                    <button onClick={() => setEditingItem({ ...editingItem, Stock: Math.max(0, editingItem.Stock - 1) })} className="w-10 h-10 bg-white rounded-full shadow-sm font-bold border hover:bg-gray-50">-</button>
                                     <span className="font-black text-xl min-w-[30px] text-center">{editingItem.Stock}</span>
-                                    <button onClick={() => setEditingItem({...editingItem, Stock: editingItem.Stock + 1})} className="w-10 h-10 bg-white rounded-full shadow-sm font-bold border hover:bg-gray-50">+</button>
+                                    <button onClick={() => setEditingItem({ ...editingItem, Stock: editingItem.Stock + 1 })} className="w-10 h-10 bg-white rounded-full shadow-sm font-bold border hover:bg-gray-50">+</button>
                                 </div>
                             </div>
 
