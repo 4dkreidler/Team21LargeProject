@@ -31,7 +31,7 @@ exports.setApp = function ( app, client )
     var id = -1;
     var fn = '';
     var ln = '';
-    var houseID = results[0].houseID || '-1';
+    var houseID = '-1';
     if( results.length > 0 )
     {
         id = results[0]._id;
