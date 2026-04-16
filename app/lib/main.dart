@@ -35,11 +35,9 @@ class ParcelPantryApp extends StatelessWidget {
         '/verification': (context) => const VerificationScreen(),
         '/success-verification': (context) => const SuccessVerificationScreen(),
         '/reseting-password': (context) => const ResetPasswordScreen(),
-        'settings': (context) => const SettingsScreen(),
         "/dashboard": (context) => const DashboardScreen(),
         '/home': (context) => const HomeScreen(), 
         '/passwordChange': (context) => const PasswordChangeScreen(),
-        
         '/settings': (context) => const SettingsScreen(),
       },
     );
