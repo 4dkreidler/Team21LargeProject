@@ -1,6 +1,5 @@
 name: Lint Codebase
 
-# This defines when the robot runs
 on:
   push:
     branches: [ main, dev, "feature/**" ]
@@ -19,12 +18,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          # Caching dependencies makes the "robot" run much faster
           cache: 'npm'
+          # Tell the runner exactly where the lock file is for caching
+          cache-dependency-path: Backend/package-lock.json
 
       - name: Install Dependencies
-        run: npm install
+        # npm ci is faster and cleaner for robots/CI than npm install
+        run: npm ci
+        working-directory: Backend
 
       - name: Run ESLint
-        # This calls the "lint" script we added to your package.json
         run: npm run lint
+        working-directory: Backend
