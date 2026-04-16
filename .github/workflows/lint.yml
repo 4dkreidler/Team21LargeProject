@@ -18,15 +18,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: 'npm'
-          # Tell the runner exactly where the lock file is for caching
-          cache-dependency-path: Backend/package-lock.json
+          # We'll skip the cache for one run to make sure it's not a cache ghost causing the crash
+          
+      - name: Debug Folder Structure
+        # This will print exactly what files the robot sees so we can verify the path
+        run: ls -R
 
       - name: Install Dependencies
-        # npm ci is faster and cleaner for robots/CI than npm install
-        run: npm ci
-        working-directory: Backend
+        # Using --prefix is a bulletproof way to tell npm where the package.json is
+        run: npm install --prefix Backend
 
       - name: Run ESLint
-        run: npm run lint
-        working-directory: Backend
+        # Running the script from the root but pointing it to the Backend folder
+        run: npm run lint --prefix Backend
