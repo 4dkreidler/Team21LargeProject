@@ -2,35 +2,49 @@ import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 import reactPlugin from "eslint-plugin-react";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
+import globals from "globals";
 
 export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
+  
+  // --- FRONTEND CONFIG (React + TS) ---
   {
-    files: ["**/*.{ts,tsx}"],
+    files: ["Frontend/**/*.{ts,tsx}"],
     plugins: {
       react: reactPlugin,
       "react-hooks": reactHooksPlugin,
     },
     languageOptions: {
+      globals: globals.browser,
       parserOptions: {
         ecmaFeatures: { jsx: true },
       },
     },
     rules: {
-      // Catching real bugs
-      "no-unused-vars": "warn",        // Warn about variables not being used
-      "no-undef": "error",             // Error if using a variable that doesn't exist
+      "no-unused-vars": "warn",
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn",
-      
-      // Being "Friendly" for the team
-      "@typescript-eslint/no-explicit-any": "off", // Allow 'any' for now so Keke doesn't get stuck
-      "react/react-in-jsx-scope": "off",          // Not needed in modern React/Vite
-      "prefer-const": "warn",
+      "react/react-in-jsx-scope": "off",
     },
     settings: {
       react: { version: "detect" },
+    },
+  },
+
+  // --- BACKEND CONFIG (Node.js + Express) ---
+  {
+    files: ["Backend/**/*.js"],
+    languageOptions: {
+      sourceType: "commonjs", // Allows require()
+      globals: {
+        ...globals.node,      // Defines 'console', 'process', etc.
+      },
+    },
+    rules: {
+      "no-console": "off",    // Let's us use console.log on server
+      "no-unused-vars": "warn",
+      "no-undef": "error",
     },
   }
 );
