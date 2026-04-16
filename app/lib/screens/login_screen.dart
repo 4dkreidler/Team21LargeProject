@@ -23,32 +23,36 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isLoading = false;
 
   String buildPath(String route) {
-    // 10.0.2.2 is correct for Android Emulators. 
-    // For iOS Simulators, use 'localhost' or '127.0.0.1'.
     return "http://10.0.2.2:5000/$route";
   }
 
   Future<void> handleSubmit() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text;
+
+    // ✅ Validation (React "required" equivalent)
+    if (email.isEmpty || password.isEmpty) {
+      setState(() => message = "Please fill in all fields");
+      return;
+    }
+
     setState(() {
       isLoading = true;
       message = "";
     });
 
-    final obj = {
-      "email": emailController.text.trim(),
-      "password": passwordController.text
-    };
-
     try {
       final response = await http.post(
         Uri.parse(buildPath("api/login")),
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode(obj),
+        body: jsonEncode({
+          "email": email,
+          "password": password,
+        }),
       );
 
       final res = jsonDecode(response.body);
 
-      // Refined logic to match your React requirements precisely
       if (res["error"] != null && res["error"].toString().isNotEmpty) {
         setState(() => message = res["error"]);
       } else if (res["id"] == null || res["id"] <= 0) {
@@ -64,7 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
         await prefs.setString("user_data", jsonEncode(user));
 
         if (!mounted) return;
-        Navigator.pushNamedAndRemoveUntil(context, "/home", (route) => false);
+        Navigator.pushNamedAndRemoveUntil(context, "/home", (_) => false);
       }
     } catch (err) {
       setState(() => message = "Unable to connect to server");
@@ -83,28 +87,28 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Layout(
-      child: SingleChildScrollView( // Added to prevent overflow when keyboard appears
+      child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // HEADER - Exact styling from your React branding
+            /// HEADER
             Column(
-              children: [
-                const Text(
+              children: const [
+                Text(
                   "PARCEL PANTRY",
                   style: TextStyle(
-                    fontSize: 30, // Slightly larger to match 3xl
+                    fontSize: 30,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF0D47A1), // blue-900
+                    color: Color(0xFF0D47A1),
                   ),
                 ),
-                const Text(
+                Text(
                   "HOUSEHOLD LOGISTICS ENGINE",
                   style: TextStyle(
                     fontSize: 10,
                     letterSpacing: 2.5,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF60A5FA), // blue-400
+                    color: Color(0xFF60A5FA),
                   ),
                 ),
               ],
@@ -116,18 +120,24 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  /// EMAIL
                   CustomInput(
                     label: "Email",
                     controller: emailController,
                   ),
+
                   const SizedBox(height: 16),
+
+                  /// PASSWORD
                   CustomInput(
                     label: "Password",
                     controller: passwordController,
                     obscureText: true,
                   ),
+
                   const SizedBox(height: 24),
 
+                  /// BUTTON / LOADING
                   isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : CustomButton(
@@ -135,6 +145,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           onPressed: handleSubmit,
                         ),
 
+                  /// ERROR MESSAGE
                   if (message.isNotEmpty) ...[
                     const SizedBox(height: 12),
                     Text(
@@ -150,16 +161,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 24),
 
-                  // Reset Password Link
+                  /// RESET PASSWORD
                   _buildFooterLink(
                     "Forgot your password?",
                     "Reset Password",
                     "/passwordChange",
                   ),
-                  
+
                   const SizedBox(height: 16),
 
-                  // Signup Link
+                  /// SIGN UP
                   _buildFooterLink(
                     "Don't have an account?",
                     "Sign up",
@@ -174,7 +185,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // Helper method to keep UI code clean and maintain "text-xs text-left"
   Widget _buildFooterLink(String label, String action, String route) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -190,7 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
             style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF2563EB), // blue-600
+              color: Color(0xFF2563EB),
               decoration: TextDecoration.underline,
             ),
           ),
