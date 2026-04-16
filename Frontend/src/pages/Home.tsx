@@ -116,8 +116,12 @@ const handleSelectHouse = (houseID: string) => {
   useEffect(() => {
     const fetchMyHouse = async () => {
       const storedUser = JSON.parse(localStorage.getItem('user_data') || '{}');
-      if (!storedUser.id) return;
-
+      if (!storedUser.id || storedUser.houseID === '-1') {
+        setHouseholds([]);
+        setLoading(false);
+      return;
+      }
+        
       try {
         const url= buildPath(`api/houses/user/${storedUser.id}`);
         const response = await fetch(url);
