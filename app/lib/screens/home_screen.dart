@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+// Widgets
 import '../widgets/layout.dart';
 import '../widgets/card_container.dart';
 import '../widgets/custom_button.dart';
@@ -16,6 +17,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  // ================= STATE =================
   List households = [];
   bool isLoading = true;
 
@@ -27,14 +29,44 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final inviteController = TextEditingController();
 
-  String buildPath(String route) {
-    return "http://localhost:5555/$route";
+  // ================= HELPERS =================
+  String buildPath(String route) => "http://localhost:5555/$route";
+
+  void _showMessage(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg)),
+    );
+  }
+
+  Future<String?> _showInputDialog(String title) async {
+    final controller = TextEditingController();
+
+    return showDialog<String>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(title),
+        content: TextField(controller: controller),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, controller.text),
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void finishCreate() {
+    Navigator.pushNamedAndRemoveUntil(context, "/dashboard", (_) => false);
   }
 
   // ================= CREATE HOUSE =================
   Future<void> handleCreateHouse() async {
-    String? houseName = await _showInputDialog("Enter Household Name");
-
+    final houseName = await _showInputDialog("Enter Household Name");
     if (houseName == null || houseName.isEmpty) return;
 
     final prefs = await SharedPreferences.getInstance();
@@ -55,19 +87,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
       if (data["error"] != null) {
         _showMessage(data["error"]);
-      } else {
-        setState(() {
-          households = [
-            {
-              "_id": data["user"]["houseID"],
-              "name": houseName,
-              "role": "Admin"
-            }
-          ];
-          generatedCode = data["house"]["password"];
-          showSuccessModal = true;
-        });
+        return;
       }
+
+      setState(() {
+        households = [
+          {
+            "_id": data["user"]["houseID"],
+            "name": houseName,
+            "role": "Admin",
+          }
+        ];
+        generatedCode = data["house"]["password"];
+        showSuccessModal = true;
+      });
     } catch (err) {
       debugPrint("Create error: $err");
     }
@@ -92,17 +125,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
       if (data["error"] != null) {
         _showMessage(data["error"]);
-      } else {
-        final updatedUser = {
-          ...storedUser,
-          "houseID": data["user"]["houseID"]
-        };
-
-        await prefs.setString("user_data", jsonEncode(updatedUser));
-
-        if (!mounted) return;
-        Navigator.pushNamedAndRemoveUntil(context, "/dashboard", (_) => false);
+        return;
       }
+
+      final updatedUser = {
+        ...storedUser,
+        "houseID": data["user"]["houseID"],
+      };
+
+      await prefs.setString("user_data", jsonEncode(updatedUser));
+
+      if (!mounted) return;
+      Navigator.pushNamedAndRemoveUntil(context, "/dashboard", (_) => false);
     } catch (err) {
       debugPrint("Join error: $err");
     }
@@ -129,9 +163,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final data = jsonDecode(response.body);
 
       if (data["households"] != null) {
-        setState(() {
-          households = data["households"];
-        });
+        setState(() => households = data["households"]);
       }
     } catch (err) {
       debugPrint("Fetch error: $err");
@@ -147,41 +179,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final updatedUser = {
       ...storedUser,
-      "houseID": houseID
+      "houseID": houseID,
     };
 
     await prefs.setString("user_data", jsonEncode(updatedUser));
 
     if (!mounted) return;
     Navigator.pushNamed(context, "/dashboard");
-  }
-
-  // ================= UI HELPERS =================
-  Future<String?> _showInputDialog(String title) async {
-    TextEditingController controller = TextEditingController();
-
-    return showDialog<String>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(title),
-        content: TextField(controller: controller),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
-          TextButton(
-            onPressed: () => Navigator.pop(context, controller.text),
-            child: const Text("OK"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showMessage(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-  }
-
-  void finishCreate() {
-    Navigator.pushNamedAndRemoveUntil(context, "/dashboard", (_) => false);
   }
 
   // ================= INIT =================
@@ -191,87 +195,54 @@ class _HomeScreenState extends State<HomeScreen> {
     fetchHouses();
   }
 
+  // ================= UI BUILD =================
   @override
   Widget build(BuildContext context) {
     return Layout(
       child: SingleChildScrollView(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            const SizedBox(height: 16),
+
+            // TITLE
             const Text(
-              "Your Households",
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF0D47A1)),
+              "YOUR HOUSEHOLDS",
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1E3A8A),
+              ),
             ),
             const SizedBox(height: 8),
-            const Text("Select a household to manage your pantry", style: TextStyle(color: Colors.grey)),
+            const Text("Select a household to manage your pantry"),
+            const SizedBox(height: 40),
 
-            const SizedBox(height: 24),
-
-            // ACTIONS
-            CardContainer(
-              child: Column(
-                children: [
-                  CustomButton(
-                    text: "Create New Household",
-                    onPressed: handleCreateHouse,
+            // ACTIONS + LIST
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    children: [
+                      buildActionCard(
+                        "Create New Household",
+                        "Start fresh and invite roommates",
+                      ),
+                      const SizedBox(height: 16),
+                      buildActionCard(
+                        "Join Existing Household",
+                        "Enter a 6-digit invite code",
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 12),
-
-                  if (!showJoinInput)
-                    CustomButton(
-                      text: "Join Household",
-                      onPressed: () {
-                        setState(() => showJoinInput = true);
-                      },
-                    )
-                  else ...[
-                    CustomInput(label: "Invite Code", controller: inviteController),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(child: CustomButton(text: "Join", onPressed: handleJoinHouse)),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: CustomButton(
-                            text: "Cancel",
-                            onPressed: () => setState(() => showJoinInput = false),
-                          ),
-                        ),
-                      ],
-                    )
-                  ]
-                ],
-              ),
+                ),
+                const SizedBox(width: 24),
+                Expanded(child: buildHouseList()),
+              ],
             ),
 
             const SizedBox(height: 24),
-
-            // LIST
-            CardContainer(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text("Joined Households", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-
-                  const SizedBox(height: 12),
-
-                  if (isLoading)
-                    const Text("Loading...")
-                  else if (households.isEmpty)
-                    const Text("No households yet")
-                  else
-                    Column(
-                      children: households.map<Widget>((house) {
-                        return ListTile(
-                          title: Text(house["name"]),
-                          subtitle: Text(house["role"]),
-                          trailing: const Icon(Icons.arrow_forward),
-                          onTap: () => handleSelectHouse(house["_id"]),
-                        );
-                      }).toList(),
-                    )
-                ],
-              ),
-            ),
 
             // SUCCESS MODAL
             if (showSuccessModal)
@@ -284,16 +255,93 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 10),
                     Text(
                       generatedCode,
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
                 actions: [
-                  TextButton(onPressed: finishCreate, child: const Text("Go to Dashboard"))
+                  TextButton(
+                    onPressed: finishCreate,
+                    child: const Text("Go to Dashboard"),
+                  ),
                 ],
-              )
+              ),
           ],
         ),
+      ),
+    );
+  }
+
+  // ================= UI COMPONENTS =================
+  Widget buildActionCard(String title, String subtitle) {
+    return CardContainer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title,
+              style: const TextStyle(
+                  fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 6),
+          Text(subtitle),
+          const SizedBox(height: 12),
+          CustomButton(
+            text: title.contains("Create")
+                ? "Create"
+                : "Join",
+            onPressed: title.contains("Create")
+                ? handleCreateHouse
+                : () => setState(() => showJoinInput = true),
+          ),
+          if (title.contains("Join") && showJoinInput)
+            Column(
+              children: [
+                const SizedBox(height: 12),
+                CustomInput(
+                  controller: inviteController,
+                  hintText: "Enter invite code",
+                ),
+                const SizedBox(height: 8),
+                CustomButton(
+                  text: "Join",
+                  onPressed: handleJoinHouse,
+                ),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildHouseList() {
+    return CardContainer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Joined Households",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+
+          if (isLoading)
+            const Text("Loading...")
+          else if (households.isEmpty)
+            const Text("No households yet")
+          else
+            Column(
+              children: households.map<Widget>((house) {
+                return ListTile(
+                  title: Text(house["name"]),
+                  subtitle: Text(house["role"]),
+                  trailing: const Icon(Icons.arrow_forward),
+                  onTap: () => handleSelectHouse(house["_id"]),
+                );
+              }).toList(),
+            ),
+        ],
       ),
     );
   }
