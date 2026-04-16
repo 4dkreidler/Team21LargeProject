@@ -50,7 +50,7 @@ exports.setApp = function ( app, client )
 
         // Generate JWT
         const token = require("./createJWT.js");
-        const ret = token.createToken(user.firstName, user.lastName, user._id);
+        const ret = token.createToken(user);
 
         return res.status(200).json(ret);
 
