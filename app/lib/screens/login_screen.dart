@@ -22,6 +22,8 @@ class _LoginScreenState extends State<LoginScreen> {
   String message = "";
   bool isLoading = false;
 
+  // Use localhost for Chrome/Web. 
+  // Change to 10.0.2.2 if testing on Android Emulator.
   String buildPath(String route) {
     return "http://localhost:5555/$route";
   }
@@ -30,7 +32,6 @@ class _LoginScreenState extends State<LoginScreen> {
     final email = emailController.text.trim();
     final password = passwordController.text;
 
-    // ✅ Validation (React "required" equivalent)
     if (email.isEmpty || password.isEmpty) {
       setState(() => message = "Please fill in all fields");
       return;
@@ -51,18 +52,27 @@ class _LoginScreenState extends State<LoginScreen> {
         }),
       );
 
+      // The server returned a response, let's parse it safely
       final res = jsonDecode(response.body);
 
+      // 1. Check for explicit error messages from your API
       if (res["error"] != null && res["error"].toString().isNotEmpty) {
         setState(() => message = res["error"]);
+        return;
+      }
 
-      } else if (res["id"] == null || res["id"].toString() == "-1") { // Check as String
-          setState(() => message = "Invalid email or password");
+      // 2. Safe check for the ID. We convert to String to avoid 
+      // TypeError: type 'String' is not a subtype of type 'int'
+      String userId = res["id"]?.toString() ?? "";
+
+      if (userId == "" || userId == "-1") {
+        setState(() => message = "Invalid email or password");
       } else {
+        // SUCCESS: Save user data
         final user = {
-          "firstName": res["firstName"],
-          "lastName": res["lastName"],
-          "id": res["id"]
+          "firstName": res["firstName"] ?? "",
+          "lastName": res["lastName"] ?? "",
+          "id": userId
         };
 
         final prefs = await SharedPreferences.getInstance();
@@ -72,7 +82,9 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.pushNamedAndRemoveUntil(context, "/home", (_) => false);
       }
     } catch (err) {
-      setState(() => message = "Unable to connect to server");
+      // Print the actual error to your terminal for debugging
+      debugPrint("Login Error: $err");
+      setState(() => message = "Connection error. Is the server running?");
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
@@ -85,6 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  // ... (Keep your existing @override Widget build and _buildFooterLink as is)
   @override
   Widget build(BuildContext context) {
     return Layout(
@@ -92,7 +105,6 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            /// HEADER
             Column(
               children: const [
                 Text(
@@ -114,39 +126,28 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ],
             ),
-
             const SizedBox(height: 32),
-
             CardContainer(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  /// EMAIL
                   CustomInput(
                     label: "Email",
                     controller: emailController,
                   ),
-
                   const SizedBox(height: 16),
-
-                  /// PASSWORD
                   CustomInput(
                     label: "Password",
                     controller: passwordController,
                     obscureText: true,
                   ),
-
                   const SizedBox(height: 24),
-
-                  /// BUTTON / LOADING
                   isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : CustomButton(
                           text: "Login",
                           onPressed: handleSubmit,
                         ),
-
-                  /// ERROR MESSAGE
                   if (message.isNotEmpty) ...[
                     const SizedBox(height: 12),
                     Text(
@@ -159,24 +160,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       textAlign: TextAlign.center,
                     ),
                   ],
-
                   const SizedBox(height: 24),
-
-                  /// RESET PASSWORD
-                  _buildFooterLink(
-                    "Forgot your password?",
-                    "Reset Password",
-                    "/passwordChange",
-                  ),
-
+                  _buildFooterLink("Forgot your password?", "Reset Password", "/passwordChange"),
                   const SizedBox(height: 16),
-
-                  /// SIGN UP
-                  _buildFooterLink(
-                    "Don't have an account?",
-                    "Sign up",
-                    "/signup",
-                  ),
+                  _buildFooterLink("Don't have an account?", "Sign up", "/signup"),
                 ],
               ),
             ),
@@ -190,10 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 12, color: Colors.grey),
-        ),
+        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
         GestureDetector(
           onTap: () => Navigator.pushNamed(context, route),
           child: Text(
