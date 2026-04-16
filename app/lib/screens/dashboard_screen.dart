@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/layout.dart';
 import '../widgets/card_container.dart';
 import '../widgets/custom_button.dart';
-//import '../widgets/custom_input.dart';
+import '../widgets/custom_tabButton.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -26,9 +26,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Map<String, dynamic>? userData;
 
-  String buildPath(String route) {
-    return "http://localhost:5555/$route";
-  }
+  String buildPath(String route) => "http://localhost:5555/$route";
+
+  String get houseID => userData?["houseID"] ?? "";
+  String get firstName => userData?["firstName"] ?? "User";
+  String get userID => userData?["id"] ?? "";
 
   // ================= INIT =================
   @override
@@ -55,118 +57,88 @@ class _DashboardScreenState extends State<DashboardScreen> {
     setState(() => isLoading = false);
   }
 
-  String get houseID => userData?["houseID"] ?? "";
-  String get firstName => userData?["firstName"] ?? "User";
-  String get userID => userData?["id"] ?? "";
-
   // ================= FETCH =================
   Future<void> fetchPantry() async {
     if (houseID.isEmpty) return;
 
-    try {
-      final response = await http.get(
-        Uri.parse(buildPath("pantry/$houseID?search=$search")),
-      );
+    final res = await http.get(
+      Uri.parse(buildPath("pantry/$houseID?search=$search")),
+    );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() => items = data["items"] ?? []);
-      }
-    } catch (e) {
-      debugPrint("Pantry error: $e");
-    }
+    final data = jsonDecode(res.body);
+    setState(() => items = data["items"] ?? []);
   }
 
   Future<void> fetchNotifications() async {
     if (houseID.isEmpty) return;
 
-    try {
-      final response = await http.get(
-        Uri.parse(buildPath("api/getNotifications/$houseID")),
-      );
+    final res = await http.get(
+      Uri.parse(buildPath("api/getNotifications/$houseID")),
+    );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final list = data is List ? data : data["notifications"] ?? [];
+    final data = jsonDecode(res.body);
+    final list = data is List ? data : data["notifications"] ?? [];
 
-        list.sort((a, b) =>
-            DateTime.parse(b["createdAt"])
-                .compareTo(DateTime.parse(a["createdAt"])));
+    list.sort((a, b) =>
+        DateTime.parse(b["createdAt"])
+            .compareTo(DateTime.parse(a["createdAt"])));
 
-        setState(() => notifications = list.take(10).toList());
-      }
-    } catch (e) {
-      debugPrint("Notif error: $e");
-    }
+    setState(() => notifications = list.take(10).toList());
   }
 
-  Future<void> sendActivity(String message) async {
-    if (houseID.isEmpty) return;
+  Future<void> sendActivity(String msg) async {
+    await http.post(
+      Uri.parse(buildPath("api/addNotification")),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "houseID": houseID,
+        "userName": firstName,
+        "message": msg
+      }),
+    );
 
-    try {
-      await http.post(
-        Uri.parse(buildPath("api/addNotification")),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "houseID": houseID,
-          "userName": firstName,
-          "message": message
-        }),
-      );
-
-      fetchNotifications();
-    } catch (e) {
-      debugPrint("Activity error: $e");
-    }
+    fetchNotifications();
   }
 
   // ================= CRUD =================
   Future<void> addItem(String name, int stock, String category) async {
-    try {
-      final response = await http.post(
-        Uri.parse(buildPath("pantry")),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "foodName": name,
-          "Stock": stock,
-          "Category": category,
-          "houseID": houseID,
-          "userID": userID
-        }),
-      );
+    await http.post(
+      Uri.parse(buildPath("pantry")),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "foodName": name,
+        "Stock": stock,
+        "Category": category,
+        "houseID": houseID,
+        "userID": userID
+      }),
+    );
 
-      if (response.statusCode == 200) {
-        sendActivity("added $name");
-        fetchPantry();
-      }
-    } catch (e) {
-      debugPrint("Add error: $e");
-    }
+    sendActivity("added $name");
+    fetchPantry();
   }
 
   Future<void> updateStock(String id, int stock, String name) async {
-    try {
-      await http.put(
-        Uri.parse(buildPath("pantry/$id")),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"Stock": stock, "userID": userID}),
-      );
+    await http.put(
+      Uri.parse(buildPath("pantry/$id")),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"Stock": stock, "userID": userID}),
+    );
 
-      sendActivity("updated $name to $stock");
-      fetchPantry();
-    } catch (e) {
-      debugPrint("Update error: $e");
-    }
+    sendActivity("updated $name to $stock");
+    fetchPantry();
   }
 
   Future<void> deleteItem(String id, String name) async {
-    try {
-      await http.delete(Uri.parse(buildPath("pantry/$id")));
-      sendActivity("deleted $name");
-      fetchPantry();
-    } catch (e) {
-      debugPrint("Delete error: $e");
-    }
+    await http.delete(Uri.parse(buildPath("pantry/$id")));
+    sendActivity("deleted $name");
+    fetchPantry();
+  }
+
+  // ================= FILTER =================
+  List displayedItems() {
+    if (viewMode == "all") return items;
+    return items.where((i) => i["Stock"] == 0).toList();
   }
 
   // ================= UI =================
@@ -174,94 +146,139 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     return Layout(
       child: isLoading
-          ? const CircularProgressIndicator()
-          : SingleChildScrollView(
-              child: Column(
-                children: [
-                  Text(
-                    "House Pantry",
-                    style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF0D47A1)),
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "House Pantry",
+                  style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF0D47A1)),
+                ),
+                Text("Welcome, $firstName"),
+
+                const SizedBox(height: 20),
+
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ================= LEFT PANEL =================
+                      Expanded(
+                        flex: 7,
+                        child: Column(
+                          children: [
+                            buildTabs(),
+                            const SizedBox(height: 12),
+                            buildSearch(),
+                            const SizedBox(height: 12),
+                            Expanded(child: buildItemList()),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(width: 20),
+
+                      // ================= RIGHT PANEL =================
+                      Expanded(
+                        flex: 3,
+                        child: buildFeed(),
+                      ),
+                    ],
                   ),
-                  Text("Welcome, $firstName"),
+                ),
 
-                  const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-                  // SEARCH
-                  TextField(
-                    decoration: const InputDecoration(
-                      hintText: "Search...",
-                      border: OutlineInputBorder(),
-                    ),
-                    onChanged: (val) {
-                      search = val;
-                      fetchPantry();
-                    },
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // ADD BUTTON
-                  CustomButton(
-                    text: "+ Add Item",
-                    onPressed: () => showAddDialog(),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // ITEMS
-                  CardContainer(
-                    child: Column(
-                      children: displayedItems().map((item) {
-                        return ListTile(
-                          title: Text(item["foodName"]),
-                          subtitle: Text("Qty: ${item["Stock"]}"),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit),
-                                onPressed: () => showEditDialog(item),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () =>
-                                    deleteItem(item["_id"], item["foodName"]),
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // NOTIFICATIONS
-                  CardContainer(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text("Household Feed",
-                            style: TextStyle(fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 10),
-                        ...notifications.map((n) {
-                          return Text("${n["userName"]}: ${n["message"]}");
-                        })
-                      ],
-                    ),
-                  )
-                ],
-              ),
+                CustomButton(
+                  text: "+ Add Item",
+                  onPressed: showAddDialog,
+                ),
+              ],
             ),
     );
   }
 
-  List displayedItems() {
-    if (viewMode == "all") return items;
-    return items.where((i) => i["Stock"] == 0).toList();
+  // ================= COMPONENTS =================
+  Widget buildTabs() {
+    return Row(
+      children: [
+        TabButton(
+          label: "All",
+          value: "all",
+          currentValue: viewMode,
+          onTap: (val) => setState(() => viewMode = val),
+        ),
+        const SizedBox(width: 10),
+        TabButton(
+          label: "Out of Stock",
+          value: "out",
+          currentValue: viewMode,
+          onTap: (val) => setState(() => viewMode = val),
+        ),
+      ],
+    );
+  }
+
+  Widget buildSearch() {
+    return TextField(
+      decoration: const InputDecoration(
+        hintText: "Search items...",
+        border: OutlineInputBorder(),
+      ),
+      onChanged: (val) {
+        search = val;
+        fetchPantry();
+      },
+    );
+  }
+
+  Widget buildItemList() {
+    return CardContainer(
+      child: ListView(
+        children: displayedItems().map<Widget>((item) {
+          return ListTile(
+            title: Text(item["foodName"]),
+            subtitle: Text("Qty: ${item["Stock"]}"),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: () => showEditDialog(item),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete),
+                  onPressed: () =>
+                      deleteItem(item["_id"], item["foodName"]),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget buildFeed() {
+    return CardContainer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("Activity Feed",
+              style: TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 10),
+          ...notifications.map((n) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Text("${n["userName"]}: ${n["message"]}"),
+            );
+          })
+        ],
+      ),
+    );
   }
 
   // ================= DIALOGS =================
@@ -277,22 +294,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: "Name")),
-            TextField(controller: stockCtrl, keyboardType: TextInputType.number),
-            DropdownButton<String>(
-              value: category,
-              items: ["General", "Dairy", "Produce", "Meat"]
-                  .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                  .toList(),
-              onChanged: (val) => category = val!,
-            )
+            TextField(controller: nameCtrl),
+            TextField(controller: stockCtrl),
           ],
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
           TextButton(
             onPressed: () {
-              addItem(nameCtrl.text, int.tryParse(stockCtrl.text) ?? 0, category);
+              addItem(nameCtrl.text, int.parse(stockCtrl.text), category);
               Navigator.pop(context);
             },
             child: const Text("Save"),
@@ -308,32 +318,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text("Edit ${item["foodName"]}"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
+        title: Text(item["foodName"]),
+        content: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text("Stock: $stock"),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                    onPressed: () => setState(() => stock--),
-                    icon: const Icon(Icons.remove)),
-                IconButton(
-                    onPressed: () => setState(() => stock++),
-                    icon: const Icon(Icons.add)),
-              ],
-            )
+            IconButton(
+                onPressed: () => setState(() => stock--),
+                icon: const Icon(Icons.remove)),
+            Text("$stock"),
+            IconButton(
+                onPressed: () => setState(() => stock++),
+                icon: const Icon(Icons.add)),
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () {
-              updateStock(item["_id"], 0, item["foodName"]);
-              Navigator.pop(context);
-            },
-            child: const Text("Out of Stock"),
-          ),
           TextButton(
             onPressed: () {
               updateStock(item["_id"], stock, item["foodName"]);

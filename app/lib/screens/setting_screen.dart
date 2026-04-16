@@ -8,6 +8,8 @@ import '../widgets/layout.dart';
 import '../widgets/card_container.dart';
 import '../widgets/custom_button.dart';
 
+
+
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
@@ -282,19 +284,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text("Leave House?"),
-        content: const Text("You will lose access."),
+        title: Text("Leave House?"),
+        content: Text("You will lose access."),
         actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel")),
-          TextButton(
-            onPressed: () {
-              handleRemoveUser(currentUserId, true);
-              Navigator.pop(context);
-            },
-            child: const Text("Leave"),
-          )
+          TextButton(onPressed: () {}, child: Text("Cancel")),
+          ElevatedButton(onPressed: () {}, child: Text("Leave")),
         ],
       ),
     );

@@ -301,7 +301,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 12),
                 CustomInput(
                   controller: inviteController,
-                  hintText: "Enter invite code",
+                  label: "Invite Code",
+                  
+                
                 ),
                 const SizedBox(height: 8),
                 CustomButton(
