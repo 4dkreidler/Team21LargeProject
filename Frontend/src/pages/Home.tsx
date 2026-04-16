@@ -1,12 +1,33 @@
 import React, { useState, useEffect } from "react";
 import { Layout } from "../components/Layout";
 import { buildPath } from "../utils/Path";
+import { jwtDecode } from "jwt-decode";
 
 interface Household {
   _id: string;
   name: string;
   role: string;
 }
+
+interface DecodedToken {
+  userId: string;
+  firstName: string;
+  lastName: string;
+  iat: number;
+}
+
+// Helper: get user from token
+const getUserFromToken = (): DecodedToken | null => {
+  const token = localStorage.getItem("accessToken");
+  if (!token) return null;
+
+  try {
+    return jwtDecode<DecodedToken>(token);
+  } catch (err) {
+    console.error("Invalid token:", err);
+    return null;
+  }
+};
 
 const Home: React.FC = () => {
   const [households, setHouseholds] = useState<Household[]>([]);
@@ -17,12 +38,13 @@ const Home: React.FC = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [generatedCode, setGeneratedCode] = useState("");
 
+   // Get user info from token
+  const user = getUserFromToken();
+  const userId = user?.userId;
+
   const handleCreateHouse = async () => {
     const houseName = prompt("Enter a name for your Household:");
     if (!houseName) return;
-
-    const storedUser = JSON.parse(localStorage.getItem('user_data') || '{}');
-    const userId = storedUser.id;
 
     try {
       const response = await fetch(buildPath('api/houses'), {
@@ -55,7 +77,7 @@ const Home: React.FC = () => {
 
   const handleJoinHouse = async () => {
     const storedUser = JSON.parse(localStorage.getItem('user_data') || '{}');
-    const userId = storedUser.id;
+    const userId = storedUser._id;
 
     try {
       const response = await fetch(buildPath('api/houses/join'), {
@@ -83,7 +105,7 @@ const Home: React.FC = () => {
 
   const fetchMyHouses = async () => {
   const storedUser = JSON.parse(localStorage.getItem('user_data') || '{}');
-  const userId = storedUser.id;
+  const userId = storedUser._id;
 
   if (!userId) return;
 
@@ -116,14 +138,14 @@ const handleSelectHouse = (houseID: string) => {
   useEffect(() => {
     const fetchMyHouse = async () => {
       const storedUser = JSON.parse(localStorage.getItem('user_data') || '{}');
-      if (!storedUser.id || storedUser.houseID === '-1') {
+      if (!storedUser._id || storedUser.houseID === '-1') {
         setHouseholds([]);
         setLoading(false);
       return;
       }
         
       try {
-        const url= buildPath(`api/houses/user/${storedUser.id}`);
+        const url= buildPath(`api/houses/user/${storedUser._id}`);
         const response = await fetch(url);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -134,7 +156,7 @@ const handleSelectHouse = (houseID: string) => {
         }
       } catch (err) {
         console.error(err);
-        console.log("No households found for this user:", storedUser.id);
+        console.log("No households found for this user:", storedUser._id);
       } finally {
         setLoading(false);
       }

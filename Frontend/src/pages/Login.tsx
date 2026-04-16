@@ -7,14 +7,12 @@ import { Layout } from "../components/Layout";
 import { buildPath } from "../utils/Path";
 import { jwtDecode } from "jwt-decode";
 
-// Create a type for decoded token
 interface DecodedToken {
   userId: string;
   firstName: string;
   lastName: string;
   iat: number;
 }
-
 const Login: React.FC = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -52,7 +50,7 @@ const Login: React.FC = () => {
       }
 
       // Store JWT
-      localStorage.setItem("token_data", res.accessToken);
+      localStorage.setItem("accessToken", res.accessToken);
 
       // Decode JWT
       const decoded = jwtDecode<DecodedToken>(res.accessToken);

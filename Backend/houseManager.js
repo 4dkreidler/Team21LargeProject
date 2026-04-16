@@ -13,6 +13,7 @@ exports.setApp = function (app, client)
         try
         {
             const { Admin, HouseName } = req.body; // Take in creating user ID and inputted house name
+            console.log("Admin received:", Admin);
 
 	    // MongoDB connection
 	    const db = client.db('pantry');
