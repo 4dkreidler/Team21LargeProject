@@ -55,8 +55,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (res["error"] != null && res["error"].toString().isNotEmpty) {
         setState(() => message = res["error"]);
-      } else if (res["id"] == null || res["id"] <= 0) {
-        setState(() => message = "Invalid email or password");
+
+      } else if (res["id"] == null || res["id"].toString() == "-1") { // Check as String
+          setState(() => message = "Invalid email or password");
       } else {
         final user = {
           "firstName": res["firstName"],
