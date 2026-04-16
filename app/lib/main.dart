@@ -5,6 +5,7 @@ import 'screens/verification_screen.dart';
 import 'screens/successVerification_screen.dart';
 import 'screens/passwordChange_screen.dart';
 import 'screens/dashboard_screen.dart'; 
+import 'screens/resetingPassword_screen.dart';
 import 'screens/setting_screen.dart';
 import 'screens/home_screen.dart';
 
@@ -33,6 +34,7 @@ class ParcelPantryApp extends StatelessWidget {
         '/signup': (context) => const SignupScreen(),
         '/verification': (context) => const VerificationScreen(),
         '/success-verification': (context) => const SuccessVerificationScreen(),
+        '/reseting-password': (context) => const ResetPasswordScreen(),
         'settings': (context) => const SettingsScreen(),
         "/dashboard": (context) => const DashboardScreen(),
         '/home': (context) => const HomeScreen(), 
