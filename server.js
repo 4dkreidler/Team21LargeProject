@@ -74,8 +74,8 @@ client.connect()
     });
 
     //Start server at Port 5000 (after the DB connection is established)
-    app.listen(PORT, ()=> {
-        console.log(`App is listenig to port : `+ PORT);
+    app.listen(PORT, '0.0.0.0', ()=> {
+    console.log(`App is listening on port: ${PORT}`);
     });
 })
 .catch(err => {
