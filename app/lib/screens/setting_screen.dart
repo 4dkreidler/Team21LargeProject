@@ -51,7 +51,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     if (stored == null) {
       if (!mounted) return;
-      Navigator.pushNamedAndRemoveUntil(context, "/", (_) => false);
+      Navigator.pushNamedAndRemoveUntil(context, "/login", (_) => false);
       return;
     }
 
@@ -250,7 +250,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                           return ListTile(
                             title: Text("$name ${isMe ? "(You)" : ""}"),
-                            subtitle: Text(m["role"]),
+                            subtitle: Text(m["role"] ?? "Member"),
                             trailing: isAdmin && !isMe
                                 ? IconButton(
                                     icon: const Icon(Icons.close),
