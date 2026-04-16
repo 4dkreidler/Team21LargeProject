@@ -1,0 +1,32 @@
+name: Lint Codebase
+
+on:
+  push:
+    branches: [ main, dev, "feature/**" ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  run-linter:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: Backend/package-lock.json
+
+      - name: Install Dependencies
+        # We 'cd' into Backend so npm finds the right package.json
+        run: npm ci
+        working-directory: Backend
+
+      - name: Run ESLint
+        # This runs 'eslint .' specifically inside the Backend folder
+        run: npm run lint
+        working-directory: Backend
