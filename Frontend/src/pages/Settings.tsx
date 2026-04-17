@@ -32,7 +32,7 @@ const Settings: React.FC = () => {
   const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
   const currentUserId = userData.id;
 
-  // --- 1. Fetch Data from Backend ---
+  // --- Fetch Data from Backend ---
   useEffect(() => {
     const fetchAllData = async () => {
       try {
@@ -72,7 +72,7 @@ const Settings: React.FC = () => {
     if (currentUserId) fetchAllData();
   }, [currentUserId]);
 
-  // --- 2. Handlers ---
+  // --- Handlers ---
 
   const handleUpdateName = async () => {
     if (!newHouseName.trim()) return;

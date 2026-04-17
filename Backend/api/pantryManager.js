@@ -146,7 +146,7 @@ exports.setApp = function (app, client) {
 		}	
 	});
 
-// Get items in pantry (supports partial matching search)
+	// Get items in pantry (supports partial matching search)
 	app.get("/api/pantry/:houseID", async(req, res) => {
 		try {
 			const { houseID } = req.params;
@@ -172,6 +172,6 @@ exports.setApp = function (app, client) {
 		} catch(err) {
 			console.error(err);
 			return res.status(500).json({message: "Unexpected error."})
-    }
-});
+    	}
+	});
 }

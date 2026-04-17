@@ -5,23 +5,21 @@ const {ObjectId} = require('mongodb');
 
 exports.setApp = function (app, client)
 {
-    // =========================
-    // CREATE HOUSE
-    // =========================
+    //Create House API
     app.post('/api/houses', async (req, res) =>
     {
         try
         {
             const { Admin, HouseName } = req.body; // Take in creating user ID and inputted house name
 
-	    // MongoDB connection
-	    const db = client.db('pantry');
+            // MongoDB connection
+            const db = client.db('pantry');
 
             if (!HouseName)
                 return res.status(400).json({ error: "House name is required." });
 
             // Find admin user
-	    const adminID = new ObjectId(Admin);
+	        const adminID = new ObjectId(Admin);
             const user = await db.collection('users').findOne({_id: adminID});
             if (!user)
                 return res.status(404).json({ error: "User not found." });
@@ -63,9 +61,7 @@ exports.setApp = function (app, client)
         }
     });
 
-    // =========================
-    // JOIN HOUSE
-    // =========================
+    //Join House API
     app.post('/api/houses/join', async (req, res) =>
     {
         try
@@ -108,9 +104,7 @@ exports.setApp = function (app, client)
         }
     });
 
-    // =========================
-    // LEAVE HOUSE
-    // =========================
+    //Leave House API
     app.delete('/api/houses/:userID', async (req, res) =>
     {
         try
@@ -170,31 +164,29 @@ exports.setApp = function (app, client)
         }
     });
 
-    // =========================
-    // GET HOUSE FOR USER
-    // =========================
+    //Get House for User API
     app.get('/api/houses/user/:userID', async (req, res) => {
         try {
             const { userID } = req.params;
             const db = client.db('pantry');
 
-            // 1. VALIDATION: Check if userID is a valid 24-character hex string
+            // Check if userID is a valid 24-character hex string
             if (!userID || userID.length !== 24) {
                 console.log("Invalid or missing UserID received:", userID);
                 return res.status(200).json({ households: [] });
             }
 
-            // 2. Safely create the ObjectId
+            // Create the ObjectId
             const objUserID = new ObjectId(userID);
 
-            // 3. Find the user
+            // Find the user
             const user = await db.collection('users').findOne({ _id: objUserID });
             
             if (!user || !user.houseID || user.houseID === "-1") {
                 return res.status(200).json({ households: [] });
             }
 
-            // 4. Find the house (Safe check for houseID as well)
+            // Find the house 
             const house = await db.collection('houses').findOne({ _id: new ObjectId(user.houseID) });
 
             if (!house) {
@@ -215,9 +207,8 @@ exports.setApp = function (app, client)
             res.status(500).json({ error: "Internal Server Error" });
         }
     });
-	// =========================
-    // GET SPECIFIC MEMBER
-    // =========================
+	
+    //Get Specific User API
     app.get('/api/houses/:houseID/:userID', async (req, res) =>
     {
         try
@@ -251,9 +242,7 @@ exports.setApp = function (app, client)
         }
     });
 
-    // =========================
-    // GET ALL MEMBERS IN HOUSE
-    // =========================
+    //Get All House Members API
     app.get('/api/houses/:houseID', async (req, res) =>
     {
         try
@@ -275,11 +264,9 @@ exports.setApp = function (app, client)
             console.error(err);
             res.status(500).json({ error: "Server error." });
         }
-});
+    });
 
-        // =========================
-    // UPDATE HOUSE NAME
-    // =========================
+    //Update House Name API
     app.post('/api/houses/update', async (req, res) => {
         try {
             const { houseID, newName } = req.body;

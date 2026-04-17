@@ -7,10 +7,10 @@ interface ItemCards {
 }
 
 const ItemCard: React.FC<ItemCards> = ({ name, quantity }) => {
-    // 1. Force the input to be a number (handles strings from DB)
+    // Force the input to be a number (handles strings from DB)
     const numQty = Number(quantity);
 
-    // 2. Define our color mapping for the text
+    // Define our color mapping for the text
     // We use full Tailwind class names so the compiler finds them
     const getTextColor = (qty: number) => {
         if (qty < 0) return "text-gray-400";   // Grey for invalid
@@ -28,7 +28,7 @@ const ItemCard: React.FC<ItemCards> = ({ name, quantity }) => {
                 </div>
             </div>
 
-            {/* 3. THE FIX: Apply the dynamic color directly to this div */}
+            {/* Apply the dynamic color directly to this div */}
             <div className={`text-sm font-bold uppercase tracking-wide ${getTextColor(numQty)}`}>
                 Quantity: {numQty}
             </div>
