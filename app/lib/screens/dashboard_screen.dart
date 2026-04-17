@@ -107,8 +107,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Uri.parse(buildPath("api/getNotifications/$houseID")));
       final data = jsonDecode(res.body);
       final list = data is List ? data : data["notifications"] ?? [];
-      list.sort((a, b) => DateTime.parse(b["createdAt"])
-          .compareTo(DateTime.parse(a["createdAt"])));
+       list.sort((a, b) {
+        final bTime = b["createdAt"] is int ? b["createdAt"] : DateTime.parse(b["createdAt"].toString()).millisecondsSinceEpoch;
+        final aTime = a["createdAt"] is int ? a["createdAt"] : DateTime.parse(a["createdAt"].toString()).millisecondsSinceEpoch;
+        return bTime.compareTo(aTime);
+      });
       if (mounted) setState(() => notifications = list.take(10).toList());
     } catch (e) {
       debugPrint("Notifications fetch error: $e");
