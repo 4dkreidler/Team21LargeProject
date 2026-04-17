@@ -20,46 +20,29 @@ exports.setApp = function ( app, client )
     app.post('/api/login', async (req, res, next) =>
 {
     // incoming: login, password
-    // outgoing: id, firstName, lastName, error (token)
+    // outgoing: id, firstName, lastName, error
     var error = '';
     const { email, password } = req.body;
-
-    /// NEW LOGIN CODE (with email verification check)
-    try {
-        // MongoDB connection
-        const db = client.db('pantry');
-
-        // Find user by email only
-        const user = await db.collection('users').findOne({ email });
-
-        if (!user) {
-            return res.status(200).json({ error: "Invalid email/password" });
-        }
-
-        // Compare hashed password
-        const isMatch = await bcrypt.compare(password, user.password);
-
-        if (!isMatch) {
-            return res.status(200).json({ error: "Invalid email/password" });
-        }
-
-        // Check email verification
-        if (!user.validated) {
-            return res.status(200).json({ error: "Please verify your email before logging in" });
-        }
-
-        // Generate JWT
-        const path = require('path');
-        const token = require(path.join(__dirname, '..', 'createJWT.js'));
-        const ret = token.createToken(user);
-
-        return res.status(200).json(ret);
-
-    } catch (e) {
-        console.log(e.toString());
-        return res.status(500).json({ error: "Server error" });
+    
+    //MongoDB connection
+    const db = client.db('pantry');
+    const results = await
+    db.collection('users').find({email:email,password:password}).toArray();
+    
+    var id = -1;
+    var fn = '';
+    var ln = '';
+    var houseID = results[0].houseID || '-1';
+    if( results.length > 0 )
+    {
+        id = results[0]._id;
+        fn = results[0].firstName;
+        ln = results[0].lastName;
+        houseID = results[0].houseID || '-1';
     }
 
+    var ret = { id:id, firstName:fn, lastName:ln, houseID:houseID, error:''};
+    res.status(200).json(ret);
 });
 
     //register api

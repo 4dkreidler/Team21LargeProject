@@ -1,26 +1,14 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Required for Clipboard
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/services.dart';
 
-class Member {
-  final String id;
-  final String firstName;
-  final String lastName;
-  final String role;
+import '../widgets/layout.dart';
+import '../widgets/card_container.dart';
+import '../widgets/custom_button.dart';
 
-  Member({required this.id, required this.firstName, required this.lastName, required this.role});
 
-  factory Member.fromJson(Map<String, dynamic> json) {
-    return Member(
-      id: json['_id'],
-      firstName: json['firstName'] ?? '',
-      lastName: json['lastName'] ?? '',
-      role: json['role'] ?? 'Member',
-    );
-  }
-}
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -30,266 +18,307 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  // --- State ---
   String houseId = "";
   String houseName = "Loading...";
   String inviteCode = "------";
-  List<Member> members = [];
+
+  List members = [];
+
   bool isLoading = true;
   bool isAdmin = false;
-  bool isEditingName = false;
-  
-  final TextEditingController _nameController = TextEditingController();
-  late String currentUserId;
 
+  bool isEditingName = false;
+  String newHouseName = "";
+
+  Map<String, dynamic>? userData;
+
+  String buildPath(String route) {
+    return "http://localhost:5555/$route";
+  }
+
+  String get currentUserId => userData?["id"] ?? "";
+
+  // ================= INIT =================
   @override
   void initState() {
     super.initState();
-    _loadInitialData();
+    loadData();
   }
 
-  String buildPath(String route) => "http://10.0.2.2:5000/$route";
-
-  Future<void> _loadInitialData() async {
+  Future<void> loadData() async {
     final prefs = await SharedPreferences.getInstance();
-    final userData = jsonDecode(prefs.getString('user_data') ?? '{}');
-    currentUserId = userData['id'];
+    final stored = prefs.getString("user_data");
+
+    if (stored == null) {
+      if (!mounted) return;
+      Navigator.pushNamedAndRemoveUntil(context, "/login", (_) => false);
+      return;
+    }
+
+    userData = jsonDecode(stored);
 
     try {
-      // 1. Fetch House Info
-      final houseRes = await http.get(Uri.parse(buildPath("api/houses/user/$currentUserId")));
-      if (houseRes.statusCode == 200) {
-        final houseData = jsonDecode(houseRes.body);
-        if (houseData['households'] != null && houseData['households'].isNotEmpty) {
-          final house = houseData['households'][0];
-          
-          setState(() {
-            houseId = house['_id'];
-            houseName = house['name'];
-            _nameController.text = houseName;
-            isAdmin = house['role'] == "Admin";
-            inviteCode = house['password'] ?? "------";
-          });
+      final houseRes = await http.get(
+        Uri.parse(buildPath("api/houses/user/$currentUserId")),
+      );
 
-          // 2. Fetch Members
-          final membersRes = await http.get(Uri.parse(buildPath("api/houses/$houseId")));
-          if (membersRes.statusCode == 200) {
-            final membersData = jsonDecode(membersRes.body);
-            setState(() {
-              members = (membersData['members'] as List)
-                  .map((m) => Member.fromJson(m))
-                  .toList();
-            });
-          }
-        }
+      final houseData = jsonDecode(houseRes.body);
+
+      if (houseData["households"] != null &&
+          houseData["households"].length > 0) {
+        final house = houseData["households"][0];
+
+        houseId = house["_id"];
+        houseName = house["name"];
+        isAdmin = house["role"] == "Admin";
+
+        final membersRes = await http.get(
+          Uri.parse(buildPath("api/houses/$houseId")),
+        );
+
+        final membersData = jsonDecode(membersRes.body);
+        members = membersData["members"] ?? [];
+
+        inviteCode =
+            house["inviteCode"] ?? house["code"] ?? house["password"] ?? "N/A";
       }
     } catch (e) {
-      debugPrint("Error loading settings: $e");
-    } finally {
-      setState(() => isLoading = false);
+      debugPrint("Settings error: $e");
     }
+
+    setState(() => isLoading = false);
   }
 
+  // ================= ACTIONS =================
   Future<void> handleUpdateName() async {
-    if (_nameController.text.trim().isEmpty) return;
+    if (newHouseName.trim().isEmpty) return;
 
     try {
-      final response = await http.put(
-        Uri.parse(buildPath("api/houses/$houseId")),
+      final response = await http.post(
+        Uri.parse(buildPath("api/houses/update")),
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"name": _nameController.text.trim()}),
+        body: jsonEncode({
+          "houseID": houseId,
+          "newName": newHouseName,
+        }),
       );
 
       if (response.statusCode == 200) {
         setState(() {
-          houseName = _nameController.text.trim();
+          houseName = newHouseName;
           isEditingName = false;
         });
+
+        _showMessage("Name updated!");
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to update name.")),
-      );
+      _showMessage("Failed to update");
     }
   }
 
   void copyToClipboard() {
     Clipboard.setData(ClipboardData(text: inviteCode));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Invite code copied!")),
-    );
+    _showMessage("Copied!");
   }
 
   Future<void> handleRemoveUser(String userId, bool isSelf) async {
     try {
-      final response = await http.delete(Uri.parse(buildPath("api/houses/$userId")));
-      if (response.statusCode == 200) {
-        if (isSelf) {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.remove('user_data');
-          if (!mounted) return;
-          Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
-        } else {
-          setState(() => members.removeWhere((m) => m.id == userId));
-        }
+      await http.delete(
+        Uri.parse(buildPath("api/houses/$userId")),
+      );
+
+      if (isSelf) {
+        if (!mounted) return;
+        Navigator.pushNamedAndRemoveUntil(context, "/home", (_) => false);
+      } else {
+        setState(() {
+          members.removeWhere((m) => m["_id"] == userId);
+        });
       }
     } catch (e) {
-      debugPrint("Remove error: $e");
+      _showMessage("Failed to remove user");
     }
   }
 
+  void _showMessage(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  // ================= UI =================
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
+    return Layout(
+      child: isLoading
+          ? const CircularProgressIndicator()
+          : SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // HEADER
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                      const Text(
+                        "Settings",
+                        style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF0D47A1)),
+                      ),
+                    ],
+                  ),
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black54),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text("Settings", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSectionHeader("HOUSEHOLD INFORMATION"),
-            _buildNameEditor(),
-            const SizedBox(height: 32),
-            
-            _buildSectionHeader("INVITE CODE"),
-            _buildInviteSection(),
-            const SizedBox(height: 32),
+                  const SizedBox(height: 20),
 
-            _buildSectionHeader("RESIDENT DIRECTORY"),
-            ...members.map((m) => _buildMemberTile(m)),
-            const SizedBox(height: 40),
+                  CardContainer(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // HOUSE NAME
+                        const Text("Household Name",
+                            style: TextStyle(fontSize: 12)),
 
-            Center(
-              child: ElevatedButton(
-                onPressed: () => _showConfirmationModal(currentUserId, true),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                ),
-                child: const Text("Leave House", style: TextStyle(fontWeight: FontWeight.bold)),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: isEditingName
+                                  ? TextField(
+                                      onChanged: (val) =>
+                                          newHouseName = val,
+                                      decoration: const InputDecoration(),
+                                    )
+                                  : Text(
+                                      houseName,
+                                      style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                            ),
+                            if (isAdmin)
+                              TextButton(
+                                onPressed: () {
+                                  if (isEditingName) {
+                                    handleUpdateName();
+                                  } else {
+                                    setState(() => isEditingName = true);
+                                  }
+                                },
+                                child: Text(isEditingName ? "Save" : "Edit"),
+                              )
+                          ],
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        // INVITE CODE
+                        const Text("Invite Code",
+                            style: TextStyle(fontSize: 12)),
+
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                inviteCode,
+                                style: const TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: copyToClipboard,
+                              child: const Text("Copy"),
+                            )
+                          ],
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        // MEMBERS
+                        const Text("Members",
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+
+                        const SizedBox(height: 10),
+
+                        ...members.map((m) {
+                          final name =
+                              "${m["firstName"] ?? "User"} ${m["lastName"] ?? ""}";
+                          final isMe = m["_id"] == currentUserId;
+
+                          return ListTile(
+                            title: Text("$name ${isMe ? "(You)" : ""}"),
+                            subtitle: Text(m["role"] ?? "Member"),
+                            trailing: isAdmin && !isMe
+                                ? IconButton(
+                                    icon: const Icon(Icons.close),
+                                    onPressed: () =>
+                                        showRemoveDialog(m["_id"]),
+                                  )
+                                : null,
+                          );
+                        }).toList(),
+
+                        const SizedBox(height: 20),
+
+                        // LEAVE BUTTON
+                        Center(
+                          child: CustomButton(
+                            text: "Leave Household",
+                            onPressed: () => showLeaveDialog(),
+                          ),
+                        )
+                      ],
+                    ),
+                  )
+                ],
               ),
             ),
-          ],
-        ),
-      ),
     );
   }
 
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Text(title, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.black45, letterSpacing: 1.5)),
-    );
-  }
-
-  Widget _buildNameEditor() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(
-          child: isEditingName
-              ? TextField(
-                  controller: _nameController,
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.blue),
-                  decoration: const InputDecoration(border: UnderlineInputBorder()),
-                )
-              : Text(houseName, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-        ),
-        if (isAdmin)
+  // ================= DIALOGS =================
+  void showLeaveDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Leave House?"),
+        content: const Text("You will lose access."),
+        actions: [
           TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
             onPressed: () {
-              if (isEditingName) {
-                handleUpdateName();
-              } else {
-                setState(() => isEditingName = true);
-              }
+              Navigator.pop(context);
+              handleRemoveUser(currentUserId, true);
             },
-            child: Text(isEditingName ? "Save" : "Edit", style: const TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text("Leave"),
           ),
-      ],
-    );
-  }
-
-  Widget _buildInviteSection() {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(color: Colors.blue[50], borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.blue[100]!)),
-          child: Text(inviteCode, style: const TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.bold, color: Colors.blue)),
-        ),
-        const SizedBox(width: 12),
-        GestureDetector(
-          onTap: copyToClipboard,
-          child: const Text("COPY", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black38)),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMemberTile(Member m) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.black12)),
-      child: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: Colors.grey[200],
-            child: Text(m.firstName.isNotEmpty ? m.firstName[0] : "?"),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("${m.firstName} ${m.id == currentUserId ? '(You)' : ''}", style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text(m.role.toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blue)),
-              ],
-            ),
-          ),
-          if (isAdmin && m.id != currentUserId)
-            IconButton(
-              icon: const Icon(Icons.close, color: Colors.grey),
-              onPressed: () => _showConfirmationModal(m.id, false, name: m.firstName),
-            ),
         ],
       ),
     );
   }
 
-  void _showConfirmationModal(String userId, bool isSelf, {String? name}) {
+  void showRemoveDialog(String userId) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Text(isSelf ? "Are you sure?" : "Remove $name?"),
-        content: Text(isSelf ? "You will lose access to this pantry." : "They will need a new code to rejoin."),
+      builder: (_) => AlertDialog(
+        title: const Text("Remove Member?"),
+        content: const Text("This will remove them."),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
-          ElevatedButton(
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel")),
+          TextButton(
             onPressed: () {
+              handleRemoveUser(userId, false);
               Navigator.pop(context);
-              handleRemoveUser(userId, isSelf);
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
-            child: Text(isSelf ? "Yes, Leave" : "Remove"),
-          ),
+            child: const Text("Remove"),
+          )
         ],
       ),
     );

@@ -1,11 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
 import '../widgets/layout.dart';
-import '../widgets/card_container.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_input.dart';
+import '../widgets/card_container.dart';
 
 class PasswordChangeScreen extends StatefulWidget {
   const PasswordChangeScreen({super.key});
@@ -15,95 +14,90 @@ class PasswordChangeScreen extends StatefulWidget {
 }
 
 class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
-  final emailController = TextEditingController();
-  String error = "";
-  bool isLoading = false;
+  final TextEditingController _emailController = TextEditingController();
+  
+  String _error = "";
+  bool _isLoading = false;
 
-  String buildPath(String route) {
-    // Using 10.0.2.2 for Android emulator as per your previous setup
-    return "http://10.0.2.2:5555/$route";
-  }
+  // Consistent with your previous working builds
+  String buildPath(String route) => "http://localhost:5555/$route";
 
-  Future<void> handleSubmit() async {
+  Future<void> _handleSubmit() async {
+    final email = _emailController.text.trim();
+
+    if (email.isEmpty) {
+      setState(() => _error = "Please enter your email address");
+      return;
+    }
+
     setState(() {
-      isLoading = true;
-      error = "";
+      _isLoading = true;
+      _error = "";
     });
 
     try {
       final response = await http.post(
         Uri.parse(buildPath("api/emailpassword")),
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"email": emailController.text.trim()}),
+        body: jsonEncode({"email": email}),
       );
 
       final data = jsonDecode(response.body);
 
-      if (response.statusCode != 200) {
-        setState(() => error = data['error'] ?? "Something went wrong");
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        setState(() => _error = data['error'] ?? "Something went wrong");
         return;
       }
 
-      // Success -> Show Modal (Dialog)
+      // Success: Show the Modal
       if (!mounted) return;
-      _showSuccessModal();
+      _showSuccessModal(email);
 
     } catch (err) {
-      setState(() => error = "Server error");
+      debugPrint("Reset Error: $err");
+      setState(() => _error = "Server error. Is the backend running?");
     } finally {
-      if (mounted) setState(() => isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  void _showSuccessModal() {
+  void _showSuccessModal(String email) {
     showDialog(
       context: context,
-      barrierDismissible: false, // User must tap the button
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  "Email Sent",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  "An email has been sent to ${emailController.text} to reset your password.",
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.grey),
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).pop(); // Close modal
-                      Navigator.of(context).pushReplacementNamed('/'); // Go to login
-                    },
-                    child: const Text("Back to Login", style: TextStyle(color: Colors.white)),
-                  ),
-                ),
-              ],
+      barrierDismissible: false, // User must click the button
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: const Text(
+          "Email Sent",
+          textAlign: TextAlign.center,
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              "An email has been sent to $email to reset your password.",
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.grey),
+            ),
+          ],
+        ),
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue[600],
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              child: const Text("Back to Login"),
             ),
           ),
-        );
-      },
+        ],
+      ),
     );
-  }
-
-  @override
-  void dispose() {
-    emailController.dispose();
-    super.dispose();
   }
 
   @override
@@ -111,12 +105,11 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
     return Layout(
       child: SingleChildScrollView(
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
             // HEADER
             Column(
-              children: [
-                const Text(
+              children: const [
+                Text(
                   "PARCEL PANTRY",
                   style: TextStyle(
                     fontSize: 30,
@@ -124,11 +117,11 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
                     color: Color(0xFF0D47A1),
                   ),
                 ),
-                const Text(
+                Text(
                   "HOUSEHOLD LOGISTICS ENGINE",
                   style: TextStyle(
                     fontSize: 10,
-                    letterSpacing: 2,
+                    letterSpacing: 2.5,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF60A5FA),
                   ),
@@ -137,54 +130,62 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
             ),
             const SizedBox(height: 32),
 
-            CardContainer(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Text(
-                    "Change Password",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+            // FORM CARD
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Change Password",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
                   ),
-                  const SizedBox(height: 24),
-                  
-                  CustomInput(
-                    label: "Email Address",
-                    controller: emailController,
-                  ),
-                  
-                  if (error.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    Text(
-                      error,
-                      style: const TextStyle(color: Colors.red, fontSize: 13),
-                    ),
-                  ],
-                  
-                  const SizedBox(height: 24),
-
-                  isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : CustomButton(
-                          text: "Send Email",
-                          onPressed: handleSubmit,
-                        ),
-                  
-                  const SizedBox(height: 16),
-
-                  // Cancel Button
-                  SizedBox(
-                    width: 100, // Matching the small button size from React
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        padding: const EdgeInsets.symmetric(vertical: 8),
+                ),
+                const SizedBox(height: 16),
+                CardContainer(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      CustomInput(
+                        label: "Email Address",
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
                       ),
-                      onPressed: () => Navigator.pushReplacementNamed(context, '/'),
-                      child: const Text("Cancel", style: TextStyle(color: Colors.white)),
-                    ),
+                      if (_error.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          _error,
+                          style: const TextStyle(color: Colors.red, fontSize: 13),
+                        ),
+                      ],
+                      const SizedBox(height: 24),
+                      _isLoading
+                          ? const Center(child: CircularProgressIndicator())
+                          : CustomButton(
+                              text: "Send Email",
+                              onPressed: _handleSubmit,
+                            ),
+                      const SizedBox(height: 16),
+                      
+                      // CANCEL BUTTON
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: TextButton.styleFrom(
+                            backgroundColor: Colors.red[500],
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                          ),
+                          child: const Text("Cancel", style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ],
         ),
