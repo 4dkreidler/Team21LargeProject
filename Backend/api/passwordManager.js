@@ -2,6 +2,7 @@ require('express');
 require('mongodb');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto'); 
+const bcrypt = require('bcrypt');
 require("node:dns/promises").setServers(["1.1.1.1", "8.8.8.8"]);
 require('dotenv').config();
 
@@ -99,9 +100,10 @@ exports.setApp = function(app, client)
             }
 
             //update password and  null verification token 
+            const hashedPassword = await bcrypt.hash(newPassword, 10);
             await db.collection('users').updateOne(
                 {email: user.email },
-                {$set: {password: newPassword, verificationToken : null, verificationTokenExpires : null}}
+                {$set: {password: hashedPassword, verificationToken : null, verificationTokenExpires : null}}
             );
 
             //return no error
