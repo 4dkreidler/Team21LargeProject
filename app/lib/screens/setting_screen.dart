@@ -284,11 +284,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text("Leave House?"),
-        content: Text("You will lose access."),
+        title: const Text("Leave House?"),
+        content: const Text("You will lose access."),
         actions: [
-          TextButton(onPressed: () {}, child: Text("Cancel")),
-          ElevatedButton(onPressed: () {}, child: Text("Leave")),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              handleRemoveUser(currentUserId, true);
+            },
+            child: const Text("Leave"),
+          ),
         ],
       ),
     );
