@@ -20,7 +20,12 @@ const Signup: React.FC = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setMessage("");
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
+    if (!passwordRegex.test(formData.password)) {
+      setMessage("Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.");
+      return;
+    }
     console.log("Form Data:", formData);
 
     const obj = {

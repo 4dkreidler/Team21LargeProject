@@ -4,7 +4,7 @@ const {ObjectId} = require('mongodb');
 
 exports.setApp = function (app, client) {
 	// Add to pantry
-	app.post("/pantry", async(req, res) => {
+	app.post("/api/pantry", async(req, res) => {
 		try{
 			const{foodName, houseID, Category, Stock, price, expirationDate, userID} = req.body; // Takes in basically everything about the food, house ID, and adding user ID
 			const db = client.db('pantry');
@@ -51,7 +51,7 @@ exports.setApp = function (app, client) {
 	});
 
 	// Update item
-	app.put("/pantry/:id", async(req, res) => {
+	app.put("/api/pantry/:id", async(req, res) => {
 		try {
 			const {id} = req.params; // built-in ID of object
 			const {foodName, Category, Stock, price, expirationDate, userID} = req.body; // Takes in editable fields and editing user ID
@@ -101,7 +101,7 @@ exports.setApp = function (app, client) {
 	});
 
 	// Delete item
-	app.delete("/pantry/:id", async(req, res) => {
+	app.delete("/api/pantry/:id", async(req, res) => {
 		try {
 			const {id} = req.params; // Takes in ID of item being deleted
 			const db = client.db('pantry');
@@ -127,7 +127,7 @@ exports.setApp = function (app, client) {
 	});
 
 	// Get specific item in pantry
-	app.get("/pantry/item/:id", async(req, res) => {
+	app.get("/api/pantry/item/:id", async(req, res) => {
 		try {
 			const {id} = req.params; // Takes in ID of item being selected
 			const db = client.db('pantry');
@@ -147,7 +147,7 @@ exports.setApp = function (app, client) {
 	});
 
 // Get items in pantry (supports partial matching search)
-	app.get("/pantry/:houseID", async(req, res) => {
+	app.get("/api/pantry/:houseID", async(req, res) => {
 		try {
 			const { houseID } = req.params;
 			const { search } = req.query; // Capture the search text from the frontend
