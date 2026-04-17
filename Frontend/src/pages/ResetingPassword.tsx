@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { Button } from "../components/Button";
+import { buildPath } from '../utils/Path';
 
 const ResetingPassword: React.FC = () => {  
     const navigate = useNavigate(); 
@@ -18,9 +19,13 @@ const ResetingPassword: React.FC = () => {
 
         setError("");
 
-        
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
         if (newPassword !== confirmPassword) {
             setError("Passwords do not match.");
+            return;
+        }
+        if(!passwordRegex.test(newPassword)) {
+            setError("Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.");
             return;
         }
 
@@ -31,7 +36,7 @@ const ResetingPassword: React.FC = () => {
         }
 
         try {
-            const response = await fetch(`http://localhost:5555/api/resetpassword/${id}`, {
+            const response = await fetch(buildPath(`api/resetpassword/${id}`), {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

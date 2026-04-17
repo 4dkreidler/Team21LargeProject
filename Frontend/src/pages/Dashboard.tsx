@@ -88,7 +88,7 @@ const Dashboard: React.FC = () => {
 
     const fetchPantry = async () => {
         if (!houseID) return;
-        const url = buildPath(`pantry/${houseID}?search=${search}`);
+        const url = buildPath(`api/pantry/${houseID}?search=${search}`);
         try {
             const response = await fetch(url);
             if (response.ok) {
@@ -101,7 +101,7 @@ const Dashboard: React.FC = () => {
     const handleAddItem = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await fetch(buildPath(`pantry`), {
+            const response = await fetch(buildPath(`api/pantry`), {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ ...newItem, houseID, userID })
@@ -117,7 +117,7 @@ const Dashboard: React.FC = () => {
 
     const updateStock = async (itemID: string, newStock: number, itemName: string) => {
         try {
-            const response = await fetch(buildPath(`pantry/${itemID}`), {
+            const response = await fetch(buildPath(`api/pantry/${itemID}`), {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ Stock: newStock, userID: userID })
@@ -133,7 +133,7 @@ const Dashboard: React.FC = () => {
     const handleDeleteItem = async (itemID: string, foodName: string) => {
         if (!window.confirm(`Remove ${foodName}?`)) return;
         try {
-            const response = await fetch(buildPath(`pantry/${itemID}`), { method: "DELETE" });
+            const response = await fetch(buildPath(`api/pantry/${itemID}`), { method: "DELETE" });
             if (response.ok) {
                 sendActivity(`deleted ${foodName}`);
                 setItems(prev => prev.filter(item => item._id !== itemID));

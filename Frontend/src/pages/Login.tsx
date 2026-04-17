@@ -5,6 +5,15 @@ import { Input } from "../components/Input";
 import { Card } from "../components/Card";
 import { Layout } from "../components/Layout";
 import { buildPath } from "../utils/Path";
+import { jwtDecode } from "jwt-decode";
+
+// Create a type for decoded token
+interface DecodedToken {
+  userId: string;
+  firstName: string;
+  lastName: string;
+  iat: number;
+}
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState<string>("");
@@ -30,15 +39,35 @@ const Login: React.FC = () => {
 
       const res = await response.json();
 
+      // Error from backend
       if (res.error && res.error.length > 0) {
         setMessage(res.error);
-      } else if (res.id <= 0) {
-        setMessage("Invalid email or password");
-      } else {
-        const user = { firstName: res.firstName, lastName: res.lastName, id: res.id };
-        localStorage.setItem("user_data", JSON.stringify(user));
-        navigate("/home");
+        return;
       }
+
+      // No token returned
+      if (!res.accessToken) {
+        setMessage("Login failed: no token returned");
+        return;
+      }
+
+      // Store JWT
+      localStorage.setItem("token_data", res.accessToken);
+
+      // Decode JWT
+      const decoded = jwtDecode<DecodedToken>(res.accessToken);
+
+      const user = {
+        id: decoded.userId,
+        firstName: decoded.firstName,
+        lastName: decoded.lastName
+      };
+
+      // Store user info
+      localStorage.setItem("user_data", JSON.stringify(user));
+
+      // Redirect
+      navigate("/home");
 
     } catch (err: any) {
       console.log(err);
