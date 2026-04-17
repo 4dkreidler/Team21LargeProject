@@ -44,8 +44,9 @@ class Layout extends StatelessWidget {
             automaticallyImplyLeading: false,
             title: GestureDetector(
               onTap: () {
+                final route = userData != null ? "/home" : "/login";
                 Navigator.pushNamedAndRemoveUntil(
-                    context, "/home", (_) => false);
+                    context, route, (_) => false);
               },
               child: Row(
                 mainAxisSize: MainAxisSize.min,
