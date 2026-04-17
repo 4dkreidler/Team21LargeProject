@@ -159,8 +159,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     children: [
                       IconButton(
                         icon: const Icon(Icons.arrow_back),
-                        onPressed: () =>
-                            Navigator.pushNamed(context, "/dashboard"),
+                        onPressed: () => Navigator.pop(context),
                       ),
                       const Text(
                         "Settings",
