@@ -133,7 +133,7 @@ const Settings: React.FC = () => {
         {/* Header */}
         <header className="flex items-center gap-4 mb-10">
           <button 
-            onClick={() => navigate("/dashboard")} 
+            onClick={() => navigate(-1)} 
             className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-all"
           >
             ←
