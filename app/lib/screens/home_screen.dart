@@ -85,10 +85,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
       final data = jsonDecode(response.body);
 
-      if (data["error"] != null) {
+        if (data["error"] != null && data["error"].toString().isNotEmpty) {
         _showMessage(data["error"]);
         return;
       }
+
+      // Save updated houseID to stored user data
+      storedUser["houseID"] = data["user"]["houseID"].toString();
+      await prefs.setString("user_data", jsonEncode(storedUser));
 
       setState(() {
         households = [
@@ -247,7 +251,16 @@ class _HomeScreenState extends State<HomeScreen> {
             // SUCCESS MODAL
             if (showSuccessModal)
               AlertDialog(
-                title: const Text("Household Created!"),
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text("Household Created!"),
+                    GestureDetector(
+                      onTap: () => setState(() => showSuccessModal = false),
+                      child: const Icon(Icons.close, color: Colors.grey),
+                    ),
+                  ],
+                ),
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
