@@ -127,7 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       final data = jsonDecode(response.body);
 
-      if (data["error"] != null) {
+       if (data["error"] != null && data["error"].toString().isNotEmpty) {
         _showMessage(data["error"]);
         return;
       }
