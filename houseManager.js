@@ -82,7 +82,7 @@ exports.setApp = function (app, client)
             if (!user)
                 return res.status(404).json({ error: "User not found." });
 
-            if (user.houseID)
+            if (user.houseID && user.houseID !== "-1" && user.houseID !== -1)
                 return res.status(400).json({ error: "User already in a house." });
 
             const house = await db.collection('houses').findOne({password});
