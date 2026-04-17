@@ -51,7 +51,7 @@ exports.setApp = function(app, client)
                 {$set: {verificationToken : token, verificationTokenExpires : Date.now() + 1000 * 60 * 30 }})//30 min token
 
             //Backend verify link
-            const verifyURL = `http://localhost:5173/reset-password/${token}`;
+            const verifyURL = `http://cop4331-21.xyz/reset-password/${token}`;
 
             //send email
             await transporter.sendMail({

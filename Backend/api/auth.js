@@ -115,7 +115,7 @@ exports.setApp = function ( app, client )
             const result = await db.collection('users').insertOne(newUser);
             
             //Backend verify link
-            const verifyURL = `http://localhost:5555/api/verify/${token}`;
+            const verifyURL = `http://cop4331-21.xyz:5555/api/verify/${token}`;
 
             await transporter.sendMail({
                 to: email,
@@ -155,7 +155,7 @@ exports.setApp = function ( app, client )
             //No user found
             if (!user) {
                 //  redirect to error page 
-                return res.redirect("http://localhost:5173/login");
+                return res.redirect("http://cop4331-21.xyz/login");
             }
 
             //user found but token expired
@@ -165,7 +165,7 @@ exports.setApp = function ( app, client )
                     {_id: user._id}
                 )
                 //redirect to error page
-                return res.redirect("http://localhost:5173/signup");
+                return res.redirect("http://cop4331-21.xyz/signup");
             }
 
             //  mark verified
@@ -175,11 +175,11 @@ exports.setApp = function ( app, client )
             );
 
             //  redirect to success page
-            return res.redirect("http://localhost:5173/verification-success");
+            return res.redirect("http://cop4331-21.xyz/verification-success");
 
         } catch (err) {
             console.log(err); 
-            return res.redirect("http://localhost:5173/login");
+            return res.redirect("http://cop4331-21.xyz/login");
         }
     });
 
