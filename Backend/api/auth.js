@@ -49,7 +49,8 @@ exports.setApp = function ( app, client )
         }
 
         // Generate JWT
-        const token = require("./createJWT.js");
+        const path = require('path');
+        const token = require(path.join(__dirname, '..', 'createJWT.js'));
         const ret = token.createToken(user);
 
         return res.status(200).json(ret);
@@ -68,6 +69,16 @@ exports.setApp = function ( app, client )
         // outgoing: id, firstName, lastName, error
         var error = '';
         const { firstName, lastName, email, password } = req.body;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ error: "Invalid email format" });
+        }
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        
+         if (!passwordRegex.test(password)) {
+            return res.status(400).json({ error: "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character." });
+        }
         var houseID = null; 
 
         try {

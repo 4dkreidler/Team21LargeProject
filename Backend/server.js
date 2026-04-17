@@ -33,30 +33,30 @@ client.connect()
     console.log('Connected to MongoDB');
 
     //Add Authentication APIs
-    var auth = require('./auth.js');
+    var auth = require('./api/auth.js');
     auth.setApp( app, client );
 
 
-    var passwordManager = require('./passwordManager.js');
+    var passwordManager = require('./api/passwordManager.js');
     passwordManager.setApp( app, client );
 
     //Add House Management APIs
-    var houseManager = require('./houseManager.js');
+    var houseManager = require('./api/houseManager.js');
     houseManager.setApp( app, client );
 
     //Add Pantry Management APIs
-    var pantryManager = require('./pantryManager.js');
+    var pantryManager = require('./api/pantryManager.js');
     pantryManager.setApp( app, client );
 
     //Add Notification Management APIs
-    var notificationManger = require('./notificationManager.js');
+    var notificationManger = require('./api/notificationManager.js');
     notificationManger.setApp( app, client );
 
     //Frontend integration
-    app.use(express.static(path.join(__dirname, 'Frontend/dist')));
+    app.use(express.static(path.join(__dirname,'..','Frontend','dist')));
 
     app.get('*', (req, res) => {
-        res.sendFile(path.join(__dirname, 'Frontend/dist', 'index.html'));
+        res.sendFile(path.join(__dirname, '..', 'Frontend', 'dist', 'index.html'));
     });
 
     app.use((req, res, next) =>
