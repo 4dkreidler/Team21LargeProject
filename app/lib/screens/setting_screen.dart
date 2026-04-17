@@ -33,7 +33,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Map<String, dynamic>? userData;
 
   String buildPath(String route) {
-  return "http://172.20.10.2:5555/$route"; 
+  return "http://192.168.4.23:5555/$route"; 
 }
   String get currentUserId => userData?["id"] ?? "";
 

@@ -23,7 +23,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   bool _isLoading = false;
 
   String buildPath(String route) {
-  return "http://172.20.10.2:5555/$route"; 
+  return "http://192.168.4.23:5555/$route"; 
 }
 
   Future<void> _handleSubmit() async {
