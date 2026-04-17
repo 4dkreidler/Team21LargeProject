@@ -29,8 +29,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String category = "General";
   final shoutCtrl = TextEditingController();
 
-  String buildPath(String route) => "http://localhost:5555/$route";
-
+  String buildPath(String route) {
+  return "http://172.20.10.2:5555/$route"; 
+}
   String get houseID => userData?["houseID"] ?? "";
   String get firstName => userData?["firstName"] ?? "User";
   String get userID => userData?["id"] ?? "";

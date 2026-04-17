@@ -20,7 +20,9 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
   bool _isLoading = false;
 
   // Consistent with your previous working builds
-  String buildPath(String route) => "http://localhost:5555/$route";
+  String buildPath(String route) {
+  return "http://172.20.10.2:5555/$route"; 
+}
 
   Future<void> _handleSubmit() async {
     final email = _emailController.text.trim();

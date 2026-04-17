@@ -49,7 +49,7 @@ class SuccessVerificationScreen extends StatelessWidget {
                   text: "Go to Login",
                   onPressed: () {
                     Navigator.pushNamedAndRemoveUntil(
-                        context, "/login", (_) => false);
+                        context, "/login", (Route<dynamic> route) => false);
                   },
                 )
               ],

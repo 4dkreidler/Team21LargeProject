@@ -29,8 +29,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final inviteController = TextEditingController();
 
-  // ================= HELPERS =================
-  String buildPath(String route) => "http://localhost:5555/$route";
+  
+  String buildPath(String route) {
+  return "http://172.20.10.2:5555/$route"; 
+}
 
   void _showMessage(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -64,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.pushNamedAndRemoveUntil(context, "/dashboard", (_) => false);
   }
 
-  // ================= CREATE HOUSE =================
+  
   Future<void> handleCreateHouse() async {
     final houseName = await _showInputDialog("Enter Household Name");
     if (houseName == null || houseName.isEmpty) return;

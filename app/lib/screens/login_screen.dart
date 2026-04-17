@@ -23,9 +23,8 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isLoading = false;
 
   String buildPath(String route) {
-    // For local dev on Chrome
-    return "http://localhost:5555/$route";
-  }
+  return "http://172.20.10.2:5555/$route"; 
+}
 
   Future<void> handleSubmit() async {
     final email = emailController.text.trim();
