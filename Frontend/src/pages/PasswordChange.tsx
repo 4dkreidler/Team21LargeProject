@@ -19,6 +19,12 @@ const PasswordChange: React.FC = () => {
         setError("");
         setEmailError("");
 
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            setEmailError("Please enter a valid email address.");
+            return;
+        }
+
         try {
             const response = await fetch("http://localhost:5555/api/emailpassword", {
                 method: "POST",
