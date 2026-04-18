@@ -31,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   
   String buildPath(String route) {
-  return "http://192.168.4.47:5555/$route"; 
+  return "http://localhost:5555/$route"; 
 }
 
   void _showMessage(String msg) {
