@@ -23,7 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isLoading = false;
 
   String buildPath(String route) {
-  return "http://192.168.4.47:5555/$route"; 
+  return "http://localhost:5555/$route"; 
 }
 
   Future<void> handleSubmit() async {
